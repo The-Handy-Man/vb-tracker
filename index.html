@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0b">
+<title>FaltumTracker</title>
+<style>
+  :root {
+    --bg: #0a0a0b; --card: #121214; --card2: #0a0a0b; --line: #242427; --text: #f3f3f0; --dim: #8e8e8a;
+    --acc: #ffffff; --acc-ink: #0a0a0b; --acc2: #ffffff; --ok: #3ecf8e; --bad: #ff5d5d;
+    --warnbg: #2a1212; --warnfg: #ffc9c9; --bannerbg: #18181b;
+    --font: "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system, sans-serif;
+  }
+  :root.light {
+    --bg: #f2f1ed; --card: #ffffff; --card2: #f2f1ed; --line: #e0ded7; --text: #121212; --dim: #6d6d68;
+    --warnbg: #fde8e8; --warnfg: #8a1f1f; --bannerbg: #ecebe6;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+  body { padding: 0 14px 48px; max-width: 900px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0 16px; position: sticky; top: 0; z-index: 4;
+    background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); }
+  header .brand { display: flex; align-items: center; gap: 10px; }
+  header .brand svg { height: 20px; width: auto; fill: var(--text); }
+  header .ver { color: var(--dim); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+  .chip { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 14px 4px 4px; border-radius: 999px;
+    background: transparent; color: var(--text); border: 1px solid var(--line); font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+  .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--acc); color: var(--acc-ink);
+    font-weight: 800; font-size: 14px; flex: none; }
+  h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; line-height: .95; text-transform: uppercase; margin: 0; }
+  h2 { font-size: 12px; color: var(--dim); font-weight: 800; margin: 22px 0 10px; text-transform: uppercase; letter-spacing: .14em; }
+  section > h2:first-child { margin-top: 0; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 18px; margin-bottom: 14px; }
+  button { font: inherit; font-weight: 800; font-size: 13px; letter-spacing: .07em; text-transform: uppercase; border: 0; border-radius: 999px;
+    padding: 12px 20px; background: var(--acc); color: var(--acc-ink); min-height: 48px; cursor: pointer; transition: transform .12s, background .3s, color .3s; }
+  button:active { transform: scale(.98); }
+  button.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--line); }
+  button.small { min-height: 38px; padding: 8px 14px; font-size: 11px; }
+  button.stop { background: var(--bad); color: #fff; }
+  button:disabled { opacity: .35; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .warn { background: var(--warnbg); border: 1px solid var(--bad); color: var(--warnfg); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 15px; }
+  .banner { background: var(--bannerbg); border: 1px solid var(--line); border-radius: 14px; padding: 8px 8px 8px 14px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; font-size: 14px; }
+  .banner span { flex: 1; }
+  .sensor { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .sensor:first-of-type { border-top: 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dim); flex: none; }
+  .dot.on { background: var(--ok); } .dot.wait { background: #ffb020; } .dot.off { background: var(--bad); }
+  .sensor .name, .hist .name { font-weight: 700; }
+  .info { color: var(--dim); font-size: 14px; }
+  .grow { flex: 1; }
+  .last { text-align: center; padding: 18px 0 10px; }
+  .last .num { font-size: 104px; font-weight: 800; line-height: .9; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+  .last .unit { font-size: 26px; font-weight: 800; color: var(--dim); letter-spacing: -.02em; }
+  .last .sub { color: var(--dim); margin-top: 12px; font-size: 14px; }
+  .flash { animation: flash .7s ease-out; }
+  @keyframes flash { from { color: var(--acc); transform: scale(1.06); } to { color: var(--text); transform: none; } }
+  :root.light .flash { animation-name: flashL; }
+  @keyframes flashL { from { color: var(--acc2); transform: scale(1.06); } to { color: var(--text); transform: none; } }
+  .typebtns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 6px 0 8px; }
+  .typebtns button { min-height: 40px; padding: 6px 14px; font-size: 12px; background: transparent; color: var(--text); box-shadow: none; border: 2px solid var(--line); }
+  .typebtns button.pred { border-style: dashed; }
+  .typebtns button.sel { color: #111; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+  .tile { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+  .tile .lbl { color: var(--dim); font-size: 12px; font-weight: 700; }
+  .tile .val { font-size: 26px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .tile .hint { color: var(--dim); font-size: 12px; }
+  canvas { width: 100%; height: 170px; display: block; background: var(--card2); border: 1px solid var(--line); border-radius: 16px; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--dim); margin: 8px 2px 0; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 8px 4px; border-top: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--dim); font-weight: 700; font-size: 12px; border-top: 0; }
+  th.l, td.l { text-align: left; }
+  td select { font: inherit; background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+  .tablewrap { max-height: 340px; overflow: auto; }
+  .note { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 14px; font-size: 15px; }
+  .note p { margin: 0 0 8px; } .note p:last-child { margin: 0; }
+  #sessTime { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-left: auto; }
+  .hist { padding: 12px 0; border-top: 1px solid var(--line); }
+  .hist:first-of-type { border-top: 0; }
+  .empty { color: var(--dim); font-size: 14px; }
+  label.field { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  label.field > span:first-child { min-width: 120px; }
+  label.field input { font: inherit; width: 110px; background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  label.field input.wide { width: auto; flex: 1; min-width: 0; }
+  /* Farbschema */
+  .themes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  .th { background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 16px; min-height: 0; padding: 12px 6px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .06em; box-shadow: none; }
+  .th[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+  .th .sw { width: 36px; height: 36px; border-radius: 50%; position: relative; box-shadow: 0 0 0 1px rgba(128,128,128,.35); }
+  .th .sw i { position: absolute; inset: 12px; border-radius: 50%; }
+  /* Vollbild-Ansichten: Lernmodus, Profile, Einstellungen */
+  .full { position: fixed; inset: 0; background: var(--bg); z-index: 5; display: flex; flex-direction: column;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); max-width: 900px; margin: 0 auto; overflow-y: auto; }
+  .full .top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .full .top h1 { flex: 1; font-size: 28px; }
+  #learn .sdots { display: flex; gap: 8px; align-items: center; color: var(--dim); font-size: 13px; }
+  #learn .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px; text-align: center; margin-bottom: 10px; }
+  #learn .card .num { font-size: 72px; font-weight: 800; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  #learn .card .num.wait { font-size: 20px; font-weight: 700; letter-spacing: 0; color: var(--dim); padding: 22px 0; }
+  #learn .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  #learn .grid button { min-height: 90px; font-size: 16px; border-radius: 22px; background: var(--card); color: var(--text); box-shadow: none; border: 3px solid var(--line); }
+  #learn .grid button.pred { border-style: dashed; }
+  #learn .grid button.wide { grid-column: 1 / -1; min-height: 56px; font-size: 13px; }
+  #learn .grid button:disabled { opacity: .3; }
+  #learn .start { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; text-align: center; }
+  #learn .start button { min-height: 72px; font-size: 16px; }
+  #profiles .intro { color: var(--dim); margin: 0 0 16px; }
+  .prof { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .prof:first-child { border-top: 0; }
+  .prof .av { width: 44px; height: 44px; font-size: 18px; }
+  .prof .name { font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+  .prof.active .name::after { content: "aktiv"; margin-left: 8px; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--acc-ink); background: var(--acc); padding: 3px 7px; border-radius: 99px; vertical-align: 3px; }
+  .menu { position: fixed; z-index: 6; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 6px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45); min-width: 210px; }
+  .mitem { display: block; width: 100%; text-align: left; background: transparent; color: var(--text); box-shadow: none;
+    border-radius: 12px; text-transform: none; letter-spacing: 0; font-size: 16px; font-weight: 700; padding: 12px 14px; min-height: 46px; }
+  .mitem:hover, .mitem:focus-visible { background: var(--card2); }
+  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--text); color: var(--bg);
+    padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; display: none; max-width: 90vw; z-index: 10; text-align: center; }
+  @media (max-width: 420px) { .last .num { font-size: 88px; } .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } label.field > span:first-child { min-width: 96px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg><span class="ver">v0.8</span></div>
+  <button id="btnProfile" class="chip" hidden><span id="profAv" class="av"></span><span id="profName"></span></button>
+</header>
+
+<div id="warn" class="warn" hidden></div>
+
+<section>
+  <h2>Sensoren</h2>
+  <div id="sensorList"><div class="empty">Noch kein Sensor verbunden.</div></div>
+  <div class="row" style="margin-top:10px">
+    <button id="btnConnect">Sensor verbinden</button>
+    <button id="btnDemo" class="ghost">Demo-Sensoren</button>
+  </div>
+</section>
+
+<section>
+  <div id="viewBanner" class="banner" hidden><span id="viewTitle"></span><button id="btnBack" class="small">Zurück zum Live-Training</button></div>
+  <div class="row" style="margin-bottom:8px" id="liveCtrl">
+    <button id="btnSession">Training starten</button>
+    <button id="btnLearn" class="ghost">Lernmodus</button>
+    <span id="sessTime">00:00</span>
+  </div>
+
+  <div class="last">
+    <div><span id="lastH" class="num">–</span> <span class="unit">cm</span></div>
+    <div id="lastSub" class="sub">Letzter Sprung</div>
+  </div>
+  <div id="typeBtns" class="typebtns"></div>
+  <div id="clfInfo" class="info" style="text-align:center;margin-bottom:6px"></div>
+
+  <div id="stats"></div>
+
+  <h2>Sprunghöhen</h2>
+  <canvas id="chartH"></canvas>
+  <div id="legend" class="legend"></div>
+
+  <h2>Sprünge pro 5 Minuten</h2>
+  <canvas id="chartF" style="height:120px"></canvas>
+
+  <h2>Nach Sprungart</h2>
+  <div class="tablewrap"><table id="typeTable"></table></div>
+
+  <h2>Was noch drin ist</h2>
+  <div id="insight" class="note"></div>
+
+  <h2>Alle Sprünge</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th class="l">Zeit</th><th class="l">Art</th><th class="l">Fuß</th><th>Höhe</th><th>Anlauf</th><th>Rhythmus (ms)</th><th>Kontakt</th><th>RSI</th><th>Landung</th></tr></thead>
+      <tbody id="jumpRows"></tbody>
+    </table>
+  </div>
+</section>
+
+
+<section>
+  <h2>Gespeicherte Trainings</h2>
+  <div id="histList"><div class="empty">Noch keine.</div></div>
+  <div class="row" style="margin-top:10px">
+    <button id="btnBackup" class="ghost small">Trainings dieses Profils als JSON sichern</button>
+  </div>
+</section>
+
+<div id="learn" class="full" hidden>
+  <div class="top">
+    <h1>Lernmodus</h1>
+    <div id="lDots" class="sdots"></div>
+    <span id="lTime" style="font-weight:700;font-variant-numeric:tabular-nums"></span>
+    <button id="lClose" class="ghost small">Schließen</button>
+  </div>
+
+  <div id="lStart" class="start">
+    <div class="info">Im Lernmodus zeigt die App nach jedem erkannten Sprung ihren Tipp (gestrichelt). Du bestätigst ihn oder tippst die richtige Bewegung an. Daraus lernt die Erkennung.</div>
+    <div id="lSensorHint" class="info"></div>
+    <button id="lBtnStart">Training starten</button>
+    <div class="row" style="justify-content:center">
+      <button id="lBtnConnect" class="ghost small">Sensor verbinden</button>
+      <button id="lBtnDemo" class="ghost small">Demo-Sensoren</button>
+    </div>
+  </div>
+
+  <div id="lRun" hidden>
+    <div class="card">
+      <div id="lHead" class="info"></div>
+      <div id="lNum" class="num"></div>
+      <div id="lSub" class="info"></div>
+    </div>
+    <div id="lGrid" class="grid"></div>
+    <div class="row" style="margin-bottom:10px">
+      <button id="lSkip" class="ghost small" style="flex:1">Überspringen</button>
+      <button id="lUndo" class="ghost small" style="flex:1">Rückgängig</button>
+    </div>
+    <div id="lStats" class="info" style="text-align:center;margin-bottom:12px"></div>
+    <button id="lStop" class="stop" style="width:100%">Training beenden</button>
+  </div>
+</div>
+
+<div id="profiles" class="full" hidden>
+  <div class="top">
+    <h1>Profile</h1>
+    <button id="pClose" class="ghost small">Schließen</button>
+  </div>
+  <p id="pIntro" class="intro"></p>
+  <section><div id="pList"></div></section>
+  <section>
+    <h2>Neues Profil</h2>
+    <label class="field"><span>Name</span> <input id="pNewName" class="wide" type="text" maxlength="30" autocomplete="off"></label>
+    <label class="field"><span>Körpergewicht</span> <input id="pNewMass" type="number" min="30" max="200" step="0.5" inputmode="decimal"> kg</label>
+    <label class="field"><span>Körpergröße</span> <input id="pNewHeight" type="number" min="120" max="230" step="1" inputmode="numeric"> cm</label>
+    <button id="pCreate" style="width:100%;margin-top:10px">Profil anlegen</button>
+  </section>
+</div>
+
+<div id="pMenu" class="menu" hidden>
+  <button id="mSettings" class="mitem">Einstellungen</button>
+  <button id="mProfiles" class="mitem">Profil wechseln</button>
+</div>
+
+<div id="settings" class="full" hidden>
+  <div class="top">
+    <h1>Einstellungen</h1>
+    <button id="sClose" class="ghost small">Fertig</button>
+  </div>
+  <section>
+    <h2>Profil</h2>
+    <label class="field"><span>Name</span> <input id="inName" class="wide" type="text" maxlength="30"></label>
+    <label class="field"><span>Körpergewicht</span> <input id="inMass" type="number" min="30" max="200" step="0.5" inputmode="decimal"> kg</label>
+    <label class="field"><span>Körpergröße</span> <input id="inHeight" type="number" min="120" max="230" step="1" inputmode="numeric"> cm</label>
+    <div class="info">Das Körpergewicht braucht die App für Absprungkraft und Leistung, die Größe für den Startwert der Schrittlänge.</div>
+  </section>
+  <section>
+    <h2>Schritte</h2>
+    <label class="field"><span>Schrittlänge</span> <input id="inStep" type="number" min="0.2" max="2" step="0.01" inputmode="decimal"> m</label>
+    <div class="row" style="margin-top:6px">
+      <button id="btnCalib" class="ghost small">Schrittlänge messen</button>
+    </div>
+    <div class="info" style="margin-top:8px">Zum Messen: Knopf drücken, eine bekannte Strecke laufen (z. B. 18 m, einmal die Feldlänge), dann „Fertig“ drücken und die Strecke eingeben. Gemessen ist genauer als der Wert aus der Körpergröße.</div>
+  </section>
+  <section>
+    <h2>Sprunghöhe</h2>
+    <label class="field"><span>Landung tiefer als Absprung</span> <input id="inDrop" type="number" min="0" max="20" step="0.5" inputmode="decimal"> cm</label>
+    <div class="info">Korrigiert die Sprunghöhe, weil man mit leicht gebeugten Beinen landet und die Flugzeit dadurch länger wird. 5 cm ist der Mittelwert aus einer Messung mit 27 Personen (Yamashita u. a. 2020). 0 = keine Korrektur.</div>
+  </section>
+  <section>
+    <h2>Farbschema</h2>
+    <div id="themes" class="themes"></div>
+    <div class="info" style="margin-top:8px">Die Farben der FaltumTracker-Gehäuse. Jedes Profil merkt sich sein eigenes Schema.</div>
+  </section>
+  <section>
+    <h2>Daten</h2>
+    <div class="row"><button id="btnBackup2" class="ghost small">Trainings dieses Profils als JSON sichern</button></div>
+  </section>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// ======================================================================
+// Konstanten (müssen zur Firmware passen)
+// ======================================================================
+const SVC_UUID   = 'a1b20000-5c1d-4e8b-9f00-766f6c6c6579';
+const JUMP_UUID  = 'a1b20001-5c1d-4e8b-9f00-766f6c6c6579';   // v1
+const STATS_UUID = 'a1b20002-5c1d-4e8b-9f00-766f6c6c6579';
+const EVENT_UUID = 'a1b20003-5c1d-4e8b-9f00-766f6c6c6579';   // v2
+const CTRL_UUID  = 'a1b20004-5c1d-4e8b-9f00-766f6c6c6579';   // v2
+const V1_DELAY_MS = 80;    // v1: so lange nach der Landung sendet die Firmware
+const PAIR_MS     = 250;   // Landungen links/rechts innerhalb dieser Zeit = ein beidbeiniger Sprung
+const G = 9.81;
+
+const TYPES = ['Angriff', 'Block', 'Aufschlag', 'Andere'];   // Zuspiel kommt mit dem Armsensor
+const TYPE_COL = { Angriff: '#ffb020', Block: '#4da3ff', Aufschlag: '#3ecf8e', Andere: '#8b98a6', '?': '#4a5560' };
+const FAKE = '__fake';
+const FEET_TXT = { L: 'links', R: 'rechts', B: 'beide', '?': '?' };
+
+// Farbschemata nach den Gehäusefarben: Gehäuse = Akzent, Logo = zweite Farbe
+const THEMES = {
+  onyx:   { name: 'Onyx',   body: '#161617', logo: '#ffffff', acc: '#ffffff', ink: '#0a0a0b', acc2: '#ffffff', light: false },
+  kreide: { name: 'Kreide', body: '#f1f0eb', logo: '#111111', acc: '#111111', ink: '#ffffff', acc2: '#111111', light: true },
+  signal: { name: 'Signal', body: '#d62a30', logo: '#3ad6c8', acc: '#e0353b', ink: '#ffffff', acc2: '#3ad6c8', light: false },
+  court:  { name: 'Court',  body: '#1f45b5', logo: '#ff8a1e', acc: '#3f6dff', ink: '#ffffff', acc2: '#ff8a1e', light: false },
+  volt:   { name: 'Volt',   body: '#e3f23b', logo: '#5b2ca3', acc: '#e3f23b', ink: '#0a0a0b', acc2: '#9b6bff', light: false }
+};
+
+// Schritt (kompakt gespeichert): [zeit, seite(0=L,1=R,2=?), aufprall_g, schwung_ms, gyroX, gyroY, gyroZ, accX, accY, accZ, anschlag]
+const S_T = 0, S_SIDE = 1, S_IMP = 2, S_SWING = 3, S_G = 4, S_A = 7, S_CLIP = 10;
+
+// ======================================================================
+// Kleine Helfer
+// ======================================================================
+const $ = id => document.getElementById(id);
+const nf = (x, d = 1) => x == null || !isFinite(x) ? '–' : x.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtTime = ms => new Date(ms).toLocaleTimeString('de-DE');
+const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = s % 60;
+  return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(ss).padStart(2, '0'); };
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const sd = a => { if (a.length < 2) return null; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
+const median = a => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y); const i = b.length >> 1; return b.length % 2 ? b[i] : (b[i - 1] + b[i]) / 2; };
+const quantile = (a, q) => { const b = [...a].sort((x, y) => x - y); const p = (b.length - 1) * q; const i = Math.floor(p); return b[i] + (b[Math.min(i + 1, b.length - 1)] - b[i]) * (p - i); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function toast(msg, ms = 3000) {
+  const t = $('toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.style.display = 'none', ms);
+}
+function loadLS(key, fb) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fb; } catch { return fb; } }
+function saveLS(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch {} }
+
+// ======================================================================
+// Speicher (IndexedDB, weil Schrittdaten für localStorage zu groß werden)
+// ======================================================================
+let db = null;
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('vbtracker', 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('sessions', { keyPath: 'id' }); d.createObjectStore('kv'); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+function idb(store, mode, fn) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, mode); const req = fn(tx.objectStore(store));
+    tx.oncomplete = () => res(req ? req.result : undefined); tx.onerror = () => rej(tx.error);
+  });
+}
+const dbPutSession = s => idb('sessions', 'readwrite', st => st.put(s));
+const dbDelSession = id => idb('sessions', 'readwrite', st => st.delete(id));
+const dbAllSessions = () => idb('sessions', 'readonly', st => st.getAll());
+const dbSetKV = (k, v) => idb('kv', 'readwrite', st => v == null ? st.delete(k) : st.put(v, k));
+const dbGetKV = k => idb('kv', 'readonly', st => st.get(k));
+
+// ======================================================================
+// Zustand
+// ======================================================================
+// Profile: jedes Profil hat eigene Trainings, Einstellungen, Erkennung und Farbschema
+let profiles = loadLS('vb_profiles', []);
+let profile = null;
+let settings = { mass: 75, stepLen: 0.6, landDrop: 5 };   // zeigt auf das aktive Profil
+let allSaved = [];                                          // Trainings aller Profile
+const saveProfiles = () => saveLS('vb_profiles', profiles);
+const curKey = () => 'current:' + (profile ? profile.id : 'none');
+const sensors = new Map();
+let session = null;         // laufendes Training
+let viewed = null;          // angesehenes gespeichertes Training (null = live)
+let saved = [];             // gespeicherte Trainings, neueste zuerst
+let pending = null;         // wartender Einzelfuß-Sprung (Paarbildung)
+let stepBuf = [];           // Schritte der letzten Sekunden, auch ohne laufendes Training
+let calib = null;           // Schrittlängen-Messung
+let wakeLock = null;
+let dirty = false, lastSave = 0;
+let trainCache = null;
+
+const view = () => viewed || session;
+
+// ======================================================================
+// Bluetooth
+// ======================================================================
+function sideOf(name) {
+  if (/-L\b/i.test(name)) return 'L';
+  if (/-R\b/i.test(name)) return 'R';
+  return '?';
+}
+
+function newSensor(key, name, demo) {
+  const s = { key, name, side: sideOf(name), status: 'neu', demo, proto: 0, stats: null,
+              lastT: null, offs: [], offset: 0, retry: 0, manual: false, device: null, ctrl: null,
+              seen: new Set(), contigT: 0, needReplay: false, replaying: false, lastSyncNow: null, early: null };
+  s.onJumpV1 = e => onJumpV1(s, e.target.value);
+  s.onEvent  = e => onEvent(s, e.target.value);
+  s.onStats  = e => onStatsData(s, e.target.value);
+  return s;
+}
+
+async function connectNew() {
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: 'VB-' }, { services: [SVC_UUID] }],
+      optionalServices: [SVC_UUID]
+    });
+    let s = sensors.get(device.id);
+    if (!s) {
+      s = newSensor(device.id, device.name || 'Sensor', false);
+      s.device = device;
+      device.addEventListener('gattserverdisconnected', () => onDisconnect(s));
+      sensors.set(s.key, s);
+    }
+    s.manual = false;
+    await connectGatt(s);
+  } catch (e) {
+    if (e.name !== 'NotFoundError') toast('Fehler: ' + e.message, 5000);
+  }
+}
+
+async function connectGatt(s) {
+  s.status = 'verbinde'; renderSensors();
+  try {
+    const server = await s.device.gatt.connect();
+    const svc = await server.getPrimaryService(SVC_UUID);
+    let ev = null;
+    try { ev = await svc.getCharacteristic(EVENT_UUID); } catch {}
+    if (ev) {
+      ev.addEventListener('characteristicvaluechanged', s.onEvent);
+      await ev.startNotifications();
+      s.proto = 2;
+      try { s.ctrl = await svc.getCharacteristic(CTRL_UUID); } catch { s.ctrl = null; }
+    } else {
+      const jc = await svc.getCharacteristic(JUMP_UUID);
+      jc.addEventListener('characteristicvaluechanged', s.onJumpV1);
+      await jc.startNotifications();
+      s.proto = 1;
+    }
+    try {
+      const sc = await svc.getCharacteristic(STATS_UUID);
+      sc.addEventListener('characteristicvaluechanged', s.onStats);
+      await sc.startNotifications();
+      onStatsData(s, await sc.readValue());
+    } catch {}
+    s.status = 'verbunden'; s.retry = 0; s.offs = [];
+    s.needReplay = true; s.replaying = false; s.liveMax = 0;   // Firmware v3: nach dem ersten Zeitsignal Verpasstes abholen
+    toast(s.name + ' verbunden' + (s.proto === 1 ? ' (alte Firmware: keine Schritte)' : ''));
+  } catch (e) {
+    s.status = 'getrennt';
+    if (!s.manual) scheduleReconnect(s);
+  }
+  renderSensors();
+}
+
+function onDisconnect(s) {
+  if (s.status === 'getrennt' || s.status === 'warte') return;
+  s.status = 'getrennt'; s.replaying = false; renderSensors();
+  if (!s.manual) { toast(s.name + ' getrennt – verbinde neu …'); scheduleReconnect(s); }
+}
+
+function scheduleReconnect(s) {
+  clearTimeout(s.retryTimer);
+  const wait = Math.min(10000, 1000 * 2 ** s.retry);
+  s.retry++;
+  s.status = 'warte'; renderSensors();
+  s.retryTimer = setTimeout(() => { if (!s.manual) connectGatt(s); }, wait);
+}
+
+function disconnectSensor(s) {
+  s.manual = true; clearTimeout(s.retryTimer); clearTimeout(s.demoTimer);
+  if (s.device && s.device.gatt.connected) s.device.gatt.disconnect();
+  sensors.delete(s.key); renderSensors();
+}
+
+async function resetSensor(s) {
+  if (!s.ctrl) return;
+  try { await s.ctrl.writeValue(new Uint8Array([1])); toast(s.name + ': Zähler auf 0'); }
+  catch (e) { toast('Fehler: ' + e.message); }
+}
+
+function onStatsData(s, dv) {
+  if (dv.byteLength < 6) return;
+  s.stats = { count: dv.getUint16(0, true), best: dv.getUint16(2, true) / 10 };
+  renderSensors();
+}
+
+// Uhrenabgleich: Jedes v2-Paket enthält die Sensorzeit beim Senden. Der kleinste Abstand
+// Handyzeit - Sensorzeit der letzten Pakete ist die beste Schätzung (geringste Funkverzögerung).
+function syncClock(s, sendT) {
+  s.offs.push(Date.now() - sendT);
+  if (s.offs.length > 30) s.offs.shift();
+  s.offset = Math.min(...s.offs);
+  return sensorT => sensorT + s.offset;
+}
+
+// ---------- Firmware v3: Ereignisse mit eigener Sensorzeit, Puffer im Sensor ----------
+function onEvent(s, dv) {
+  if (dv.byteLength < 5) return;
+  const type = dv.getUint8(0);
+  if (type === 1 || type === 2) return onEventV2(s, dv);
+  if (type === 7) return onSync(s, dv.getUint32(1, true));
+  if (!s.offs.length) { (s.early ||= []).push(dv); return; }   // erst Zeitsignal abwarten
+  const evT = dv.getUint32(1, true);
+  if (type === 8) return onReplayEnd(s, evT);
+  const flags = dv.getUint8(dv.byteLength - 1), replay = !!(flags & 0x80);
+  const key = type + ':' + evT;
+  if (s.seen.has(key)) return;                                 // schon da (live oder früher nachgeliefert)
+  s.seen.add(key);
+  if (replay) { s.contigT = Math.max(s.contigT, evT); s.replayN++; }
+  else if (s.replaying || s.needReplay) s.liveMax = Math.max(s.liveMax || 0, evT);   // Live-Ereignis vor/während dem Nachladen: Lücke davor bleibt offen
+  else s.contigT = Math.max(s.contigT, evT);
+  const at = Math.round(evT + s.offset);
+  if (type === 5 && dv.byteLength >= 13) {
+    addStep([at, s.side === 'L' ? 0 : s.side === 'R' ? 1 : 2,
+             dv.getUint16(5, true) / 100, dv.getUint16(7, true),
+             dv.getUint8(9) * 10, dv.getUint8(10) * 10, dv.getUint8(11) * 10, 0, 0, 0, flags & 1]);
+  } else if (type === 6 && dv.byteLength >= 14) {
+    if (session && at < session.start - 5000) return;
+    const ev = { sensor: s.name, side: s.side, at, flight: dv.getUint16(5, true), h: dv.getUint16(7, true) / 10,
+                 peak: dv.getUint16(9, true) / 100, contact: dv.getUint16(11, true), clipped: !!(flags & 1), v2: true };
+    if (replay) commitSingle(ev); else footEvent(ev);
+  }
+}
+
+function onSync(s, now) {
+  if (s.lastSyncNow != null && now + 2000 < s.lastSyncNow) {   // Sensoruhr ist zurückgesprungen: Sensor wurde neu gestartet
+    s.offs = []; s.contigT = 0; s.seen.clear();
+  }
+  s.lastSyncNow = now; s.proto = 3;
+  syncClock(s, now);
+  if (s.early) { const e = s.early; s.early = null; e.forEach(d => onEvent(s, d)); }
+  if (s.needReplay) {
+    s.needReplay = false;
+    if (session) {
+      const fromSession = Math.max(0, Math.round(session.start - s.offset) - 5000);
+      requestReplay(s, s.contigT ? Math.max(s.contigT + 1, fromSession) : fromSession);
+    } else s.contigT = Math.max(s.contigT, now, s.liveMax || 0);   // ohne Training nichts Altes holen
+    renderSensors();
+  }
+}
+
+async function requestReplay(s, fromT) {
+  if (!s.ctrl) return;
+  s.replaying = true; s.replayN = 0; s.replayFromAt = fromT + s.offset;
+  const b = new Uint8Array(5); b[0] = 2;
+  new DataView(b.buffer).setUint32(1, fromT, true);
+  try { await s.ctrl.writeValue(b); } catch { s.replaying = false; s.needReplay = true; }
+  renderSensors();
+}
+
+function onReplayEnd(s, endT) {
+  s.replaying = false;
+  s.contigT = Math.max(s.contigT, endT, s.liveMax || 0);
+  if (session && s.replayN) {
+    // Sprünge im nachgeladenen Zeitraum neu auswerten: ihre Anlaufschritte können erst jetzt vollständig sein
+    for (const j of session.jumps) if (j.at >= s.replayFromAt - 3000) {
+      j.app = (j.v2 || session.v2) ? analyzeApproach(session.steps, j.to) : null;
+      if (!j.label) j.pred = classify(j);
+    }
+    markDirty(true);
+    toast(`${s.name}: ${s.replayN} verpasste Ereignisse nachgeladen`);
+  }
+  renderSensors(); renderAll();
+}
+const anyReplaying = () => [...sensors.values()].some(s => s.replaying);
+
+// ---------- Firmware v2 ----------
+function onEventV2(s, dv) {
+  const type = dv.getUint8(0), sendT = dv.getUint32(1, true);
+  const toPhone = syncClock(s, sendT);
+  if (type === 1 && dv.byteLength >= 18) {
+    const at = Math.round(toPhone(sendT - dv.getUint16(5, true)));
+    addStep([at, s.side === 'L' ? 0 : s.side === 'R' ? 1 : 2,
+             dv.getUint16(7, true) / 100, dv.getUint16(9, true),
+             dv.getUint8(11) * 10, dv.getUint8(12) * 10, dv.getUint8(13) * 10,
+             dv.getUint8(14) / 16, dv.getUint8(15) / 16, dv.getUint8(16) / 16,
+             dv.getUint8(17) & 1]);
+  } else if (type === 2 && dv.byteLength >= 16) {
+    const tLand = sendT - dv.getUint16(5, true);
+    if (tLand === s.lastT) return;
+    s.lastT = tLand;
+    footEvent({ sensor: s.name, side: s.side, at: Math.round(toPhone(tLand)),
+                flight: dv.getUint16(7, true), h: dv.getUint16(9, true) / 10,
+                peak: dv.getUint16(11, true) / 100, contact: dv.getUint16(13, true),
+                clipped: !!(dv.getUint8(15) & 1), v2: true });
+  }
+}
+
+function onJumpV1(s, dv) {
+  if (dv.byteLength < 10) return;
+  const t = dv.getUint32(0, true);
+  if (t === s.lastT) return;
+  s.lastT = t;
+  footEvent({ sensor: s.name, side: s.side, at: Date.now() - V1_DELAY_MS,
+              flight: dv.getUint16(4, true), h: dv.getUint16(6, true) / 10,
+              peak: dv.getUint16(8, true) / 100, contact: 0, clipped: false, v2: false });
+}
+
+// ======================================================================
+// Schritte und Sprünge
+// ======================================================================
+// in eine nach Zeit sortierte Liste einfügen (nachgelieferte Ereignisse sind älter)
+function insertSorted(arr, item, key) {
+  const t = key(item);
+  if (!arr.length || key(arr[arr.length - 1]) <= t) { arr.push(item); return; }
+  let lo = 0, hi = arr.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (key(arr[mid]) <= t) lo = mid + 1; else hi = mid; }
+  arr.splice(lo, 0, item);
+}
+
+function addStep(st) {
+  const cut = Date.now() - 10000;
+  if (st[S_T] >= cut) {
+    insertSorted(stepBuf, st, x => x[S_T]);
+    while (stepBuf.length && stepBuf[0][S_T] < cut) stepBuf.shift();
+  }
+  if (session && st[S_T] >= session.start - 5000) { insertSorted(session.steps, st, x => x[S_T]); session.v2 = true; markDirty(); }
+  if (calib) { calib.count++; calib.sides.add(st[S_SIDE]); $('btnCalib').textContent = `Fertig (${calib.count} Schritte)`; }
+}
+
+function footEvent(ev) {
+  if (pending && pending.ev.sensor !== ev.sensor && Math.abs(ev.at - pending.ev.at) <= PAIR_MS) {
+    clearTimeout(pending.timer);
+    const a = pending.ev; pending = null;
+    commitJump(buildPair(a, ev));
+    return;
+  }
+  if (pending) { clearTimeout(pending.timer); commitSingle(pending.ev); }
+  // etwas länger warten als PAIR_MS, weil die zweite Meldung per Funk später ankommen kann
+  pending = { ev, timer: setTimeout(() => { const p = pending; pending = null; commitSingle(p.ev); }, PAIR_MS + 150) };
+}
+
+function buildPair(a, ev) {
+  const L = a.side === 'L' ? a : ev, R = a.side === 'L' ? ev : a;
+  const cs = [a.contact, ev.contact].filter(c => c > 0);
+  // Der Fuß, der zuletzt aufsetzt, hat den kürzeren Kontakt und macht den eigentlichen Absprung.
+  return { at: Math.min(a.at, ev.at), feet: 'B', h: (a.h + ev.h) / 2,
+           flight: Math.round((a.flight + ev.flight) / 2), peak: Math.max(a.peak, ev.peak),
+           hL: L.h, hR: R.h, peakL: L.peak, peakR: R.peak,
+           contact: cs.length ? Math.min(...cs) : 0, contactL: L.contact || null, contactR: R.contact || null,
+           clipped: a.clipped || ev.clipped, v2: a.v2 || ev.v2, sensors: [a.sensor, ev.sensor] };
+}
+
+function commitSingle(ev) {
+  // Gibt es schon einen Einzelfuß-Sprung vom anderen Schuh zur selben Zeit? Dann zusammenführen.
+  // (passiert, wenn ein Schuh live gemeldet hat und der andere erst nachliefert)
+  if (session) {
+    for (let i = session.jumps.length - 1; i >= 0; i--) {
+      const j = session.jumps[i];
+      if (j.at < ev.at - PAIR_MS - 2000) break;
+      if (j.sensors && j.sensors.length === 1 && j.sensors[0] !== ev.sensor && (j.feet === 'L' || j.feet === 'R')
+          && j.feet !== ev.side && Math.abs(j.at - ev.at) <= PAIR_MS) { mergeInto(j, ev); return; }
+    }
+  }
+  commitJump({ at: ev.at, feet: ev.side, h: ev.h, flight: ev.flight, peak: ev.peak,
+               hL: ev.side === 'L' ? ev.h : null, hR: ev.side === 'R' ? ev.h : null,
+               peakL: ev.side === 'L' ? ev.peak : null, peakR: ev.side === 'R' ? ev.peak : null,
+               contact: ev.contact, clipped: ev.clipped, v2: ev.v2, sensors: [ev.sensor] });
+}
+
+function mergeInto(j, ev) {
+  const a = { sensor: j.sensors[0], side: j.feet, at: j.at, flight: j.flight, h: j.hRaw ?? j.h,
+              peak: j.peak, contact: j.contact, clipped: j.clipped, v2: j.v2 };
+  Object.assign(j, buildPair(a, ev), { hRaw: null, hLRaw: null, hRRaw: null });
+  correctHeight(j);
+  j.to = j.at - j.flight;
+  j.app = (j.v2 || session.v2) ? analyzeApproach(session.steps, j.to) : null;
+  if (!j.label) j.pred = classify(j);
+  session.jumps.sort((x, y) => x.at - y.at);
+  markDirty(true);
+  if (!viewed && !anyReplaying()) renderAll();
+}
+
+// ---------- Höhe korrigieren: Landung mit leicht gebeugten Beinen ----------
+// Landet der Körperschwerpunkt um d tiefer, als er beim Absprung war, ist die Flugzeit
+//   t = sqrt(2h/g) + sqrt(2(h+d)/g).
+// Nach h aufgelöst (q = t / sqrt(2/g), u = sqrt(h)):  u = (q² − d) / (2q)
+function heightFromFlight(flightMs) {
+  const q = (flightMs / 1000) / Math.sqrt(2 / G), d = (settings.landDrop || 0) / 100;
+  const u = (q * q - d) / (2 * q);
+  return u > 0 ? u * u * 100 : 0;          // cm
+}
+function correctHeight(j) {
+  if (j.hRaw == null) { j.hRaw = j.h; j.hLRaw = j.hL; j.hRRaw = j.hR; }   // Sensorwerte aufheben
+  const h = heightFromFlight(j.flight), off = j.hRaw - h;
+  j.h = h;
+  j.hL = j.hLRaw != null ? Math.max(0, j.hLRaw - off) : null;
+  j.hR = j.hRRaw != null ? Math.max(0, j.hRRaw - off) : null;
+}
+const v0Of = j => Math.sqrt(2 * G * j.h / 100);
+const rsiOf = j => j.contact >= 50 && j.contact <= 1000 ? (j.h / 100) / (j.contact / 1000) : null;   // Höhe [m] / Kontaktzeit [s]   // Absprunggeschwindigkeit aus der korrigierten Höhe
+
+async function recorrectAll() {
+  for (const ses of [...saved, session].filter(Boolean)) {
+    ses.jumps.forEach(correctHeight);
+    if (ses !== session) await dbPutSession(ses);
+  }
+  if (session) markDirty(true);
+  renderAll();
+}
+
+function commitJump(j) {
+  correctHeight(j);
+  if (!session) startSession(true);
+  j.to = j.at - j.flight;                  // Zeitpunkt des Absprungs
+  j.app = (j.v2 || session.v2) ? analyzeApproach(session.steps, j.to) : null;
+  j.label = null;
+  j.pred = classify(j);
+  insertSorted(session.jumps, j, x => x.at);
+  markDirty(true);
+  if (anyReplaying()) return;                // beim Nachladen erst am Ende neu zeichnen
+  if (!viewed) renderAll(true);
+  if (learnOpen) { renderLearn(); try { navigator.vibrate && navigator.vibrate(60); } catch {} }
+}
+
+// ---------- Anlauf: Schritte vor dem Absprung rückwärts verfolgen ----------
+function analyzeApproach(steps, to) {
+  const cand = [];
+  for (let i = steps.length - 1; i >= 0; i--) {
+    const t = steps[i][S_T];
+    if (t < to - 4000) break;
+    if (t <= to + 40) cand.push(steps[i]);
+  }
+  cand.sort((a, b) => a[S_T] - b[S_T]);
+  const chain = [];
+  let tPrev = to;
+  for (let i = cand.length - 1; i >= 0; i--) {
+    const gap = tPrev - cand[i][S_T];
+    if (gap > (chain.length ? 900 : 700)) break;   // längere Pause = gehört nicht mehr zum Anlauf
+    if (to - cand[i][S_T] > 2500) break;            // ein Anlauf dauert nicht länger als 2,5 s
+    chain.unshift(cand[i]); tPrev = cand[i][S_T];
+  }
+  const n = chain.length;
+  // Ruhe vor dem Anlauf: Abstand zum letzten Bodenkontakt davor (vor dem Aufschlag steht man meist ein paar Sekunden still)
+  const startT = n ? chain[0][S_T] : to;
+  let prevT = null;
+  for (let i = steps.length - 1; i >= 0; i--) {
+    const t = steps[i][S_T];
+    if (t < startT - 30000) break;
+    if (t < startT - 5 && (prevT == null || t > prevT)) prevT = t;
+  }
+  const rest = prevT == null ? 30000 : startT - prevT;
+  const gaps = [];
+  for (let i = 1; i < n; i++) gaps.push(chain[i][S_T] - chain[i - 1][S_T]);
+  const lats = [], rots = [];
+  for (const st of chain) {
+    const g = [st[S_G], st[S_G + 1], st[S_G + 2]], sum = g[0] + g[1] + g[2];
+    if (sum < 100) continue;                        // kaum Bewegung -> keine Aussage
+    lats.push(1 - g[pitchAxis(steps, st[S_SIDE])] / sum);
+    rots.push(sum);
+  }
+  return { n, gaps, lastGap: gaps.length ? gaps[gaps.length - 1] : null, meanGap: gaps.length ? mean(gaps) : null,
+           dur: n ? to - chain[0][S_T] : 0, rest, lat: lats.length ? mean(lats) : null, rot: rots.length ? mean(rots) : null };
+}
+
+// Die Achse, um die sich der Fuß beim normalen Vorwärtsschritt am stärksten dreht (Abrollen).
+// Wird aus allen Schritten des Trainings geschätzt, damit die Einbaulage egal ist.
+const pitchCache = new Map();
+function pitchAxis(steps, side) {
+  const key = side + ':' + Math.floor(steps.length / 50);
+  if (pitchCache.has(key)) return pitchCache.get(key);
+  const sel = steps.filter(s => s[S_SIDE] === side && s[S_G] + s[S_G + 1] + s[S_G + 2] > 150).slice(-400);
+  let ax = 1;
+  if (sel.length >= 5) {
+    const m = [0, 1, 2].map(i => median(sel.map(s => s[S_G + i])));
+    ax = m.indexOf(Math.max(...m));
+  }
+  pitchCache.set(key, ax);
+  return ax;
+}
+
+// ======================================================================
+// Sprungart erkennen: erst Regeln, dann aus eigenen Markierungen lernen (k nächste Nachbarn)
+// ======================================================================
+function features(j) {
+  const a = j.app;
+  if (!a) return null;
+  return [Math.min(a.n, 6), a.lastGap ?? 800, a.meanGap ?? 800, a.lat ?? 0.5, (a.rot ?? 0) / 100,
+          j.contact || 0, Math.min(a.dur, 4000), j.feet === 'B' ? 1 : 0, Math.min(a.rest ?? 2000, 15000)];
+}
+
+function ruleClassify(j) {
+  const a = j.app;
+  if (!a) return null;
+  const sideways = a.lat != null && a.lat >= 0.5;
+  if (a.n >= 2 && !sideways && (a.rest ?? 0) >= 3000) return 'Aufschlag';   // erst Stillstand, dann Anlauf
+  if (a.n >= 3 && !sideways) return 'Angriff';
+  if (a.n <= 1 || sideways) return 'Block';
+  return 'Angriff';
+}
+
+function trainingSet() {
+  if (trainCache) return trainCache;
+  const all = [...saved];
+  if (session && !saved.some(s => s.id === session.id)) all.push(session);
+  const X = [], y = [];
+  for (const ses of all) for (const j of ses.jumps) {
+    if (!j.label || j.fake) continue;
+    const f = features(j); if (!f) continue;
+    X.push(f); y.push(j.label);
+  }
+  const dims = X.length ? X[0].length : 0;
+  const mu = [], sg = [];
+  for (let d = 0; d < dims; d++) {
+    const col = X.map(r => r[d]);
+    mu[d] = mean(col); sg[d] = sd(col) || 1;
+  }
+  trainCache = { X, y, mu, sg, classes: new Set(y).size };
+  return trainCache;
+}
+
+function classify(j) {
+  const f = features(j);
+  if (!f) return null;
+  const T = trainingSet();
+  if (T.X.length < 10 || T.classes < 2) return ruleClassify(j);
+  const z = r => r.map((v, d) => (v - T.mu[d]) / T.sg[d]);
+  const q = z(f);
+  const dist = T.X.map((r, i) => { const zr = z(r); return [Math.hypot(...zr.map((v, d) => v - q[d])), T.y[i]]; })
+                  .sort((a, b) => a[0] - b[0]);
+  const k = Math.min(5, dist.length), votes = {};
+  for (let i = 0; i < k; i++) votes[dist[i][1]] = (votes[dist[i][1]] || 0) + 1 / (dist[i][0] + 0.1);
+  return Object.entries(votes).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function typeOf(j) { return j.fake ? 'kein Sprung' : (j.label || j.pred || '?'); }
+const jumpsOf = ses => ses ? ses.jumps.filter(j => !j.fake) : [];   // ohne als Fehlerkennung markierte
+
+function setLabel(ses, idx, label) {
+  const j = ses.jumps[idx];
+  if (!j) return;
+  j.fake = label === FAKE;
+  j.label = (label && label !== FAKE) ? label : null;
+  trainCache = null;
+  for (const o of ses.jumps) if (!o.label) o.pred = classify(o);   // neu Gelerntes sofort anwenden
+  if (ses === session) markDirty(true); else dbPutSession(ses);
+  renderAll();
+}
+
+// ======================================================================
+// Auswertung
+// ======================================================================
+function analyze(ses) {
+  const J = jumpsOf(ses), S = ses.steps || [];
+  const end = ses.end || Date.now();
+  const r = { n: J.length, durMin: (end - ses.start) / 60000 };
+  const hs = J.map(j => j.h);
+  if (r.n) {
+    r.best = Math.max(...hs); r.avg = mean(hs); r.sd = sd(hs);
+    if (r.n >= 20) {
+      const f10 = mean(hs.slice(0, 10)), l10 = mean(hs.slice(-10));
+      r.fatigue = (l10 - f10) / f10 * 100;
+    }
+    const top = [...hs].sort((a, b) => b - a).slice(0, Math.max(1, Math.ceil(r.n * 0.2)));
+    r.top20 = mean(top) - r.avg;
+  }
+  // aktive Zeit: alle Ereignisse, Lücken über 5 s zählen als Pause
+  const times = S.map(s => s[S_T]).concat(J.map(j => j.at)).sort((a, b) => a - b);
+  let active = 0;
+  for (let i = 1; i < times.length; i++) { const d = times[i] - times[i - 1]; if (d <= 5000) active += d; }
+  r.activeMin = active / 60000;
+  r.jpm = r.durMin > 0.5 ? r.n / r.durMin : null;
+  r.jpmActive = r.activeMin > 1 ? r.n / r.activeMin : null;
+
+  // Schritte und Strecke
+  const sides = new Set(S.map(s => s[S_SIDE]));
+  r.oneSided = sides.size === 1;
+  r.steps = S.length * (r.oneSided ? 2 : 1);
+  r.dist = r.steps * settings.stepLen;
+  if (S.length) {
+    const ts = S.map(s => s[S_T]).sort((a, b) => a - b);
+    let best = 0, lo = 0;
+    for (let hi = 0; hi < ts.length; hi++) { while (ts[hi] - ts[lo] > 3000) lo++; best = Math.max(best, hi - lo + 1); }
+    r.cadMax = best / 3 * (r.oneSided ? 2 : 1);
+  }
+
+  // Absprung
+  const withC = J.filter(j => j.contact >= 50 && j.contact <= 1000);
+  const m = settings.mass;
+  r.contact = withC.length ? mean(withC.map(j => j.contact)) : null;
+  r.rsi = withC.length ? mean(withC.map(rsiOf)) : null;
+  r.rsiBest = withC.length ? Math.max(...withC.map(rsiOf)) : null;
+  r.v0 = r.n ? mean(J.map(v0Of)) : null;
+  r.v0Best = r.n ? Math.max(...J.map(v0Of)) : null;
+  // Leistung nach Sayers (1999): P = 60,7·h[cm] + 45,3·m[kg] − 2055
+  r.powerAvg = r.n ? 60.7 * r.avg + 45.3 * m - 2055 : null;
+  r.powerBest = r.n ? 60.7 * r.best + 45.3 * m - 2055 : null;
+  // mittlere Kraft im letzten Bodenkontakt: F = m·(v0/t + g)
+  r.force = withC.length ? mean(withC.map(j => m * (v0Of(j) / (j.contact / 1000) + G))) : null;
+
+  // Landung
+  if (r.n) {
+    const pk = J.map(j => j.peak);
+    r.peakMax = Math.max(...pk); r.peakAvg = mean(pk);
+    r.clipped = J.filter(j => j.clipped).length;
+    r.load = pk.reduce((a, b) => a + b, 0);
+    const both = J.filter(j => j.peakL && j.peakR);
+    if (both.length >= 5) {
+      const l = mean(both.map(j => j.peakL)), rr = mean(both.map(j => j.peakR));
+      r.asym = (l - rr) / ((l + rr) / 2) * 100;
+    }
+  }
+  r.feet = { L: J.filter(j => j.feet === 'L').length, R: J.filter(j => j.feet === 'R').length, B: J.filter(j => j.feet === 'B').length };
+  return r;
+}
+
+function insight(ses) {
+  const r = analyze(ses), out = [];
+  if (r.n >= 5) out.push(`Deine besten 20 % der Sprünge liegen ${nf(r.top20)} cm über deinem Schnitt. So viel wäre drin, wenn jeder Sprung so gut wäre wie deine guten.`);
+  if (r.fatigue != null) {
+    out.push(r.fatigue < -5
+      ? `Die letzten 10 Sprünge waren ${nf(-r.fatigue, 0)} % niedriger als die ersten 10. Das spricht für Ermüdung.`
+      : r.fatigue > 5
+        ? `Die letzten 10 Sprünge waren ${nf(r.fatigue, 0)} % höher als die ersten 10. Du warst am Anfang wohl noch nicht ganz warm.`
+        : `Zwischen den ersten und letzten 10 Sprüngen gibt es kaum einen Unterschied (${nf(r.fatigue, 0)} %).`);
+  }
+  let pool = jumpsOf(ses).filter(j => j.app && j.app.n >= 2);
+  if (pool.length < 12) pool = jumpsOf(ses).filter(j => j.app);
+  if (pool.length < 12) {
+    out.push(ses.v2 || pool.length
+      ? `Für eine Auswertung der Technik brauche ich mindestens 12 Sprünge mit Schrittdaten (bisher ${pool.length}).`
+      : 'Für eine Auswertung der Technik braucht es die Firmware v2 (Schrittdaten).');
+    return out;
+  }
+  const cand = [
+    { name: 'Kontaktzeit beim Absprung', unit: 'ms', get: j => j.contact >= 50 && j.contact <= 1000 ? j.contact : null },
+    { name: 'Zeit zwischen den letzten zwei Schritten', unit: 'ms', get: j => j.app.lastGap },
+    { name: 'Dauer des Anlaufs', unit: 'ms', get: j => j.app.n >= 2 ? j.app.dur : null },
+    { name: 'Zahl der Anlaufschritte', unit: '', get: j => j.app.n },
+    { name: 'mittlere Zeit zwischen den Anlaufschritten', unit: 'ms', get: j => j.app.meanGap }
+  ];
+  let best = null;
+  for (const c of cand) {
+    const p = pool.map(j => [c.get(j), j.h]).filter(x => x[0] != null);
+    if (p.length < 12) continue;
+    const xs = p.map(x => x[0]), ys = p.map(x => x[1]);
+    const mx = mean(xs), my = mean(ys), sx = sd(xs), sy = sd(ys);
+    if (!sx || !sy) continue;
+    const rr = p.reduce((s, [x, y]) => s + (x - mx) * (y - my), 0) / ((p.length - 1) * sx * sy);
+    if (!best || Math.abs(rr) > Math.abs(best.r)) best = { c, r: rr, b: rr * sy / sx, xs, mx, n: p.length };
+  }
+  if (!best || Math.abs(best.r) < 0.3) {
+    out.push('In deinen Anlauf-Werten habe ich keinen deutlichen Zusammenhang mit der Sprunghöhe gefunden. Das kann heißen, dass dein Anlauf gleichmäßig ist, oder dass es noch zu wenige Sprünge sind.');
+    return out;
+  }
+  const { c, r: rr, b, xs, mx } = best;
+  const target = b > 0 ? quantile(xs, 0.75) : quantile(xs, 0.25);
+  const gain = b * (target - mx);
+  const dir = b > 0 ? 'größer' : 'kleiner';
+  out.push(`Am stärksten hängt deine Sprunghöhe mit der ${c.name} zusammen (r = ${nf(rr, 2)}, ${best.n} Sprünge): Je ${dir} der Wert, desto höher der Sprung. ` +
+    `Im Schnitt liegst du bei ${nf(mx, 0)} ${c.unit}, bei deinem besten Viertel ${b > 0 ? 'bei mindestens' : 'bei höchstens'} ${nf(target, 0)} ${c.unit}. ` +
+    `Wenn du das regelmäßig schaffst, wären nach deinen Daten etwa ${nf(gain)} cm mehr im Schnitt drin.`);
+  out.push('Das ist ein Zusammenhang in deinen Messwerten. Ob genau das die Ursache ist, zeigt erst ein Test: bewusst so springen und schauen, ob die Höhe steigt.');
+  return out;
+}
+
+// ======================================================================
+// Training starten, beenden, speichern
+// ======================================================================
+function startSession(auto = false) {
+  viewed = null;
+  session = { id: Date.now(), profileId: profile ? profile.id : null, start: Date.now(), end: null, jumps: [], steps: [...stepBuf], v2: stepBuf.length > 0 };
+  if (auto) toast('Training automatisch gestartet');
+  requestWakeLock();
+  markDirty(true); renderAll();
+}
+
+async function stopSession() {
+  if (!session) return;
+  if (pending) { clearTimeout(pending.timer); const p = pending; pending = null; commitSingle(p.ev); }
+  session.end = Date.now();
+  const s = session; session = null;
+  if (s.jumps.length) {
+    await dbPutSession(s); saved.unshift(s); allSaved.unshift(s);
+    toast('Training gespeichert: ' + s.jumps.length + ' Sprünge');
+  } else toast('Keine Sprünge – nicht gespeichert');
+  await dbSetKV(curKey(), null);
+  trainCache = null;
+  releaseWakeLock();
+  if (learnOpen) { learnOpen = false; $('learn').hidden = true; }
+  learnUndo = [];
+  renderAll();
+}
+
+function markDirty(now = false) {
+  dirty = true;
+  if (now || Date.now() - lastSave > 3000) saveCurrent();
+}
+async function saveCurrent() {
+  if (!db || !dirty) return;
+  dirty = false; lastSave = Date.now();
+  try { await dbSetKV(curKey(), session); } catch { toast('Speichern fehlgeschlagen'); }
+}
+
+async function requestWakeLock() {
+  try { if ('wakeLock' in navigator && session) wakeLock = await navigator.wakeLock.request('screen'); } catch {}
+}
+function releaseWakeLock() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && session) requestWakeLock();
+  if (document.visibilityState === 'hidden') { dirty = true; saveCurrent(); }
+});
+
+// ======================================================================
+// Anzeige
+// ======================================================================
+function renderSensors() {
+  renderLearn();
+  const list = $('sensorList');
+  if (!sensors.size) { list.innerHTML = '<div class="empty">Noch kein Sensor verbunden.</div>'; return; }
+  list.innerHTML = '';
+  for (const s of sensors.values()) {
+    const row = document.createElement('div'); row.className = 'sensor';
+    const cls = s.status === 'verbunden' ? 'on' : (s.status === 'getrennt' ? 'off' : 'wait');
+    const info = [s.status, s.proto ? 'Firmware v' + s.proto : '', s.replaying ? 'lädt Verpasstes nach …' : '',
+                  s.stats ? `zählt ${s.stats.count} Sprünge` : ''].filter(Boolean).join(' · ');
+    row.innerHTML = `<span class="dot ${cls}"></span>
+      <div class="grow"><div class="name">${esc(s.name)}${s.demo ? ' (Demo)' : ''}</div><div class="info">${esc(info)}</div></div>
+      ${s.ctrl ? '<button class="ghost small" data-a="reset">Zähler 0</button>' : ''}
+      <button class="ghost small" data-a="off">Trennen</button>`;
+    row.querySelector('[data-a=off]').onclick = () => disconnectSensor(s);
+    const rb = row.querySelector('[data-a=reset]'); if (rb) rb.onclick = () => resetSensor(s);
+    list.appendChild(row);
+  }
+}
+
+function tile(label, val, hint) {
+  return `<div class="tile"><div class="lbl">${label}</div><div class="val">${val}</div>${hint ? `<div class="hint">${hint}</div>` : ''}</div>`;
+}
+
+function renderStats(ses) {
+  const r = ses ? analyze(ses) : { n: 0, feet: { L: 0, R: 0, B: 0 } };
+  const no = !ses || !ses.v2;
+  const step = no ? 'braucht Firmware v2' : '';
+  $('stats').innerHTML =
+    `<h2>Sprünge</h2><div class="tiles">` +
+      tile('Sprünge', r.n) +
+      tile('Sprünge pro Minute', nf(r.jpm), r.jpmActive ? `${nf(r.jpmActive)} in aktiver Zeit` : 'über die ganze Zeit') +
+      tile('Bester', r.n ? nf(r.best) + ' cm' : '–') +
+      tile('Schnitt', r.n ? nf(r.avg) + ' cm' : '–', r.sd ? `± ${nf(r.sd)} cm Streuung` : '') +
+      tile('Ermüdung', r.fatigue != null ? nf(r.fatigue, 0) + ' %' : '–', 'letzte 10 gegen erste 10') +
+      tile('Links / Rechts / Beide', `${r.feet.L}/${r.feet.R}/${r.feet.B}`, 'Landung auf') +
+    `</div>` +
+    `<h2>Absprung</h2><div class="tiles">` +
+      tile('Absprung­geschwindigkeit', r.v0 ? nf(r.v0, 2) + ' m/s' : '–', r.v0Best ? `beste ${nf(r.v0Best, 2)} m/s` : '') +
+      tile('Kontaktzeit vor dem Absprung', r.contact ? nf(r.contact, 0) + ' ms' : '–', step || 'letzter Bodenkontakt') +
+      tile('Explosivität (RSI)', r.rsi ? nf(r.rsi, 2) : '–', step || (r.rsiBest ? `beste ${nf(r.rsiBest, 2)} · Höhe in m ÷ Kontakt in s` : 'Höhe in m ÷ Kontaktzeit in s')) +
+      tile('Absprungkraft', r.force ? nf(r.force, 0) + ' N' : '–', r.force ? `${nf(r.force / (settings.mass * G), 1)}-faches Körpergewicht, grob` : step) +
+      tile('Leistung', r.n ? nf(r.powerAvg, 0) + ' W' : '–', r.n ? `beste ${nf(r.powerBest, 0)} W, Richtwert` : '') +
+    `</div>` +
+    `<h2>Laufen</h2><div class="tiles">` +
+      tile('Schritte', no ? '–' : r.steps, no ? step : (r.oneSided ? 'nur ein Schuh, hochgerechnet' : '')) +
+      tile('Strecke', no ? '–' : nf(r.dist / 1000, 2) + ' km', no ? step : `grob, ${nf(settings.stepLen, 2)} m pro Schritt`) +
+      tile('Schnellste Schrittfolge', r.cadMax ? nf(r.cadMax) + ' /s' : '–', no ? step : 'Schritte pro Sekunde, über 3 s') +
+      tile('Aktive Zeit', r.activeMin ? fmtDur(r.activeMin * 60000) : '–', 'ohne Pausen über 5 s') +
+    `</div>` +
+    `<h2>Landung</h2><div class="tiles">` +
+      tile('Härteste Landung', r.n ? nf(r.peakMax) + ' g' : '–', r.clipped ? `${r.clipped}× Sensor am Anschlag` : 'gemessen am Schuh') +
+      tile('Schnitt Landung', r.n ? nf(r.peakAvg) + ' g' : '–') +
+      tile('Landebelastung', r.n ? nf(r.load, 0) : '–', 'Summe aller Landespitzen in g') +
+      tile('Seitenunterschied', r.asym != null ? nf(Math.abs(r.asym), 0) + ' % ' + (r.asym > 0 ? 'links' : 'rechts') : '–', 'härter landender Fuß') +
+    `</div>`;
+}
+
+function renderLast(ses, flash) {
+  const J = jumpsOf(ses);
+  const last = J[J.length - 1];
+  const el = $('lastH');
+  el.textContent = last ? nf(last.h) : '–';
+  if (last) {
+    const a = last.app, parts = [FEET_TXT[last.feet], `${last.flight} ms Flug`, `${nf(last.peak)} g`];
+    if (a) parts.push(a.n ? `${a.n} Anlaufschritte` + (a.gaps.length ? ` (${a.gaps.join(' / ')} ms)` : '') : 'ohne Anlauf');
+    if (last.contact) parts.push(`Kontakt ${last.contact} ms` + (rsiOf(last) ? ` · RSI ${nf(rsiOf(last), 2)}` : ''));
+    if (J.length > 1 && last.h >= Math.max(...J.map(j => j.h))) parts.push('neuer Bestwert');
+    $('lastSub').textContent = parts.join(' · ');
+  } else $('lastSub').textContent = 'Letzter Sprung';
+  if (flash) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+
+  const tb = $('typeBtns'); tb.innerHTML = '';
+  if (last) {
+    TYPES.forEach(t => {
+      const b = document.createElement('button');
+      b.textContent = t;
+      if (last.label === t) { b.className = 'sel'; b.style.background = TYPE_COL[t]; b.style.borderColor = TYPE_COL[t]; }
+      else if (!last.label && last.pred === t) { b.className = 'pred'; b.style.borderColor = TYPE_COL[t]; }
+      b.onclick = () => setLabel(ses, ses.jumps.indexOf(last), last.label === t ? null : t);
+      tb.appendChild(b);
+    });
+  }
+  const T = trainingSet();
+  $('clfInfo').textContent = !last ? '' :
+    (last.app ? (T.X.length >= 10 && T.classes >= 2
+      ? `Erkennung gelernt aus ${T.X.length} markierten Sprüngen. Gestrichelt = Vorschlag, antippen = bestätigen.`
+      : `Erkennung über feste Regeln (${T.X.length}/10 markierte Sprünge zum Lernen). Gestrichelt = Vorschlag.`)
+      : 'Ohne Schrittdaten (Firmware v1) kann ich die Sprungart nicht vorschlagen. Markieren geht trotzdem.');
+}
+
+function renderTypeTable(ses) {
+  const J = jumpsOf(ses);
+  const groups = {};
+  for (const j of J) (groups[typeOf(j)] ||= []).push(j);
+  const keys = [...TYPES, '?'].filter(k => groups[k]);
+  if (!keys.length) { $('typeTable').innerHTML = '<tr><td class="l empty">Noch keine Sprünge.</td></tr>'; return; }
+  let h = '<tr><th class="l">Art</th><th>Anzahl</th><th>Schnitt</th><th>Bester</th><th>Anlauf</th><th>Kontakt</th><th>RSI</th></tr>';
+  for (const k of keys) {
+    const g = groups[k], hs = g.map(j => j.h);
+    const ns = g.filter(j => j.app).map(j => j.app.n), cs = g.filter(j => j.contact >= 50).map(j => j.contact);
+    h += `<tr><td class="l"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${TYPE_COL[k]};margin-right:6px"></i>${k === '?' ? 'unbekannt' : k}</td>
+      <td>${g.length}</td><td>${nf(mean(hs))} cm</td><td>${nf(Math.max(...hs))} cm</td>
+      <td>${ns.length ? nf(mean(ns), 1) + ' Schr.' : '–'}</td><td>${cs.length ? nf(mean(cs), 0) + ' ms' : '–'}</td><td>${nf(mean(g.map(rsiOf).filter(x => x != null)), 2)}</td></tr>`;
+  }
+  $('typeTable').innerHTML = h;
+}
+
+function renderJumpRows(ses) {
+  const J = ses ? ses.jumps : [];
+  const rows = $('jumpRows'); rows.innerHTML = '';
+  for (let i = J.length - 1; i >= 0 && i >= J.length - 300; i--) {
+    const j = J[i], tr = document.createElement('tr');
+    const feet = j.feet === 'B' && j.hL != null ? `beide (${nf(j.hL)}/${nf(j.hR)})` : FEET_TXT[j.feet];
+    const opts = ['', ...TYPES].map(t => `<option value="${t}" ${!j.fake && j.label === t ? 'selected' : ''}>${t || (j.pred ? j.pred + '?' : '–')}</option>`).join('')
+      + `<option value="${FAKE}" ${j.fake ? 'selected' : ''}>kein Sprung</option>`;
+    const sel = `<select>${opts}</select>`;
+    if (j.fake) tr.style.opacity = '.45';
+    tr.innerHTML = `<td class="l">${fmtTime(j.at)}</td><td class="l">${sel}</td><td class="l">${feet}</td>
+      <td>${nf(j.h)} cm</td><td>${j.app ? j.app.n : '–'}</td><td>${j.app && j.app.gaps.length ? j.app.gaps.join(' / ') : '–'}</td>
+      <td>${j.contact ? j.contact + ' ms' : '–'}</td><td>${nf(rsiOf(j), 2)}</td><td>${nf(j.peak)} g${j.clipped ? '+' : ''}</td>`;
+    tr.querySelector('select').onchange = e => setLabel(ses, i, e.target.value);
+    rows.appendChild(tr);
+  }
+}
+
+function setupCanvas(c) {
+  const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+  c.width = w * dpr; c.height = h * dpr;
+  const g = c.getContext('2d'); g.scale(dpr, dpr); g.clearRect(0, 0, w, h);
+  return { g, w, h };
+}
+
+function barChart(c, values, colors, step) {
+  const { g, w, h } = setupCanvas(c);
+  const padL = 30, padT = 10, padB = 8, plotW = w - padL - 6, plotH = h - padT - padB;
+  const maxV = Math.max(step * 2, ...values) * 1.1;
+  const cs = getComputedStyle(document.documentElement);
+  g.strokeStyle = cs.getPropertyValue('--line').trim(); g.fillStyle = cs.getPropertyValue('--dim').trim(); g.font = '11px system-ui'; g.lineWidth = 1;
+  for (let v = 0; v <= maxV; v += step) {
+    const y = padT + plotH - v / maxV * plotH;
+    g.beginPath(); g.moveTo(padL, y); g.lineTo(w - 6, y); g.stroke();
+    g.fillText(v, 4, y + 4);
+  }
+  if (!values.length) return;
+  const slot = plotW / values.length, bw = Math.max(2, Math.min(18, slot - 2));
+  values.forEach((v, i) => {
+    const bh = v / maxV * plotH;
+    g.fillStyle = colors[i]; g.fillRect(padL + i * slot + 1, padT + plotH - bh, bw, bh);
+  });
+}
+
+function renderCharts(ses) {
+  const J = jumpsOf(ses);
+  const shown = J.slice(-80);
+  barChart($('chartH'), shown.map(j => j.h), shown.map(j => TYPE_COL[typeOf(j)]), 20);
+  const bins = [];
+  if (ses) {
+    const end = ses.end || Date.now(), nb = Math.max(1, Math.ceil((end - ses.start) / 300000));
+    for (let i = 0; i < nb; i++) bins.push(0);
+    for (const j of J) { const b = Math.min(nb - 1, Math.floor((j.at - ses.start) / 300000)); if (b >= 0) bins[b]++; }
+  }
+  const a2 = getComputedStyle(document.documentElement).getPropertyValue('--acc2').trim();
+  barChart($('chartF'), bins.slice(-60), bins.slice(-60).map(() => a2), 5);
+  $('legend').innerHTML = [...TYPES, '?'].map(t => `<span><i style="background:${TYPE_COL[t]}"></i>${t === '?' ? 'unbekannt' : t}</span>`).join('');
+}
+
+function renderInsight(ses) {
+  $('insight').innerHTML = jumpsOf(ses).length
+    ? insight(ses).map(p => `<p>${esc(p)}</p>`).join('')
+    : '<p class="empty">Noch keine Sprünge.</p>';
+}
+
+function renderHistory() {
+  const list = $('histList');
+  if (!saved.length) { list.innerHTML = '<div class="empty">Noch keine.</div>'; return; }
+  list.innerHTML = '';
+  saved.forEach(ses => {
+    const r = analyze(ses), d = new Date(ses.start);
+    const div = document.createElement('div'); div.className = 'hist';
+    div.innerHTML = `<div class="name">${d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}, ${d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</div>
+      <div class="info">${fmtDur(ses.end - ses.start)} · ${r.n} Sprünge · bester ${nf(r.best)} cm · Schnitt ${nf(r.avg)} cm${ses.v2 ? ` · ${nf(r.dist / 1000, 2)} km` : ''}</div>
+      <div class="row" style="margin-top:6px"><button class="ghost small" data-a="v">Ansehen</button><button class="ghost small" data-a="c">CSV</button><button class="ghost small" data-a="d">Löschen</button></div>`;
+    div.querySelector('[data-a=v]').onclick = () => { viewed = ses; renderAll(); window.scrollTo({ top: $('viewBanner').offsetTop - 20, behavior: 'smooth' }); };
+    div.querySelector('[data-a=c]').onclick = () => exportCsv(ses);
+    div.querySelector('[data-a=d]').onclick = async () => {
+      if (!confirm('Dieses Training löschen?')) return;
+      await dbDelSession(ses.id); saved = saved.filter(s => s !== ses); allSaved = allSaved.filter(s => s !== ses);
+      if (viewed === ses) viewed = null;
+      trainCache = null; renderAll();
+    };
+    list.appendChild(div);
+  });
+}
+
+function renderAll(flash = false) {
+  const ses = view();
+  $('viewBanner').hidden = !viewed;
+  $('liveCtrl').hidden = !!viewed;
+  if (viewed) $('viewTitle').textContent = 'Gespeichertes Training vom ' + new Date(viewed.start).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+  const b = $('btnSession');
+  b.textContent = session ? 'Training beenden' : 'Training starten';
+  b.className = session ? 'stop' : '';
+  renderLast(ses, flash); renderStats(ses); renderCharts(ses); renderTypeTable(ses);
+  renderInsight(ses); renderJumpRows(ses); renderHistory(); renderLearn();
+}
+
+// ======================================================================
+// Lernmodus: jeder erkannte Sprung wird nacheinander zum Bestätigen angezeigt
+// ======================================================================
+let learnOpen = false;
+let learnUndo = [];          // zuletzt markierte Sprünge (Index), für "Rückgängig"
+
+function learnQueue() {
+  if (!session || !session.learnFrom) return [];
+  const q = [];
+  session.jumps.forEach((j, i) => { if (j.at >= session.learnFrom && !j.label && !j.fake && !j.skip) q.push(i); });
+  return q;
+}
+
+function openLearn() {
+  viewed = null; learnOpen = true; $('learn').hidden = false;
+  if (session && !session.learnFrom) { session.learnFrom = Date.now(); markDirty(true); }
+  renderLearn();
+}
+function closeLearn() { learnOpen = false; $('learn').hidden = true; renderAll(); }
+
+function learnStart() {
+  if (!session) startSession();
+  session.learnFrom = Date.now();
+  learnUndo = [];
+  markDirty(true); renderLearn();
+}
+
+function learnMark(idx, label) {
+  const j = session.jumps[idx];
+  if (label !== FAKE && j.pred) j.hit = j.pred === label;   // Trefferquote der Erkennung
+  setLabel(session, idx, label);
+  learnUndo.push(j);
+  renderLearn();
+}
+
+function learnSkip(idx) { session.jumps[idx].skip = true; learnUndo.push(session.jumps[idx]); markDirty(true); renderLearn(); }
+
+function learnUndoLast() {
+  const j = learnUndo.pop();
+  if (!j) return;
+  const idx = session.jumps.indexOf(j);
+  if (idx < 0) return;
+  j.skip = false; delete j.hit;
+  setLabel(session, idx, null);
+  renderLearn();
+}
+
+function renderLearn() {
+  if (!learnOpen) return;
+  // Sensoren
+  const dots = [...sensors.values()].map(s => {
+    const c = s.status === 'verbunden' ? 'var(--ok)' : s.status === 'getrennt' ? 'var(--bad)' : 'var(--acc)';
+    return `<span><span class="dot" style="display:inline-block;background:${c};vertical-align:-1px"></span> ${esc(s.side)}</span>`;
+  }).join('');
+  $('lDots').innerHTML = dots || 'kein Sensor';
+  const running = !!(session && session.learnFrom);
+  $('lStart').hidden = running; $('lRun').hidden = !running;
+  if (!running) {
+    $('lSensorHint').textContent = sensors.size ? `${sensors.size} Sensor(en) verbunden.` : 'Noch kein Sensor verbunden.';
+    $('lBtnStart').textContent = session ? 'Lernen im laufenden Training starten' : 'Training starten';
+    return;
+  }
+  const q = learnQueue(), idx = q.length ? q[0] : null, j = idx != null ? session.jumps[idx] : null;
+  const grid = $('lGrid'); grid.innerHTML = '';
+  if (j) {
+    $('lHead').textContent = `Sprung um ${fmtTime(j.at)}` + (q.length > 1 ? ` · noch ${q.length - 1} weitere offen` : '');
+    $('lNum').className = 'num'; $('lNum').textContent = nf(j.h) + ' cm';
+    const a = j.app, parts = [FEET_TXT[j.feet]];
+    if (a) {
+      parts.push(a.n ? `${a.n} Anlaufschritte` : 'ohne Anlauf');
+      if (a.gaps.length) parts.push(`Rhythmus ${a.gaps.join(' / ')} ms`);
+      if (a.rest != null) parts.push(a.rest >= 30000 ? 'vorher lange Ruhe' : `${nf(a.rest / 1000)} s Ruhe davor`);
+      if (a.lat != null) parts.push(a.lat >= 0.5 ? 'eher seitlich' : 'eher vorwärts');
+    }
+    if (j.contact) parts.push(`Kontakt ${j.contact} ms` + (rsiOf(j) ? ` · RSI ${nf(rsiOf(j), 2)}` : ''));
+    $('lSub').textContent = parts.join(' · ');
+  } else {
+    $('lHead').textContent = '';
+    $('lNum').className = 'num wait'; $('lNum').textContent = 'Warte auf die nächste Bewegung …';
+    $('lSub').textContent = '';
+  }
+  for (const t of [...TYPES, FAKE]) {
+    const b = document.createElement('button');
+    b.textContent = t === FAKE ? 'Kein Sprung (Fehlerkennung)' : t;
+    if (t === FAKE) b.classList.add('wide');
+    const col = TYPE_COL[t] || 'var(--bad)';
+    if (j && j.pred === t) { b.classList.add('pred'); b.style.borderColor = col; b.style.color = col; }
+    b.disabled = !j;
+    b.onclick = () => learnMark(idx, t);
+    grid.appendChild(b);
+  }
+  $('lSkip').disabled = !j;
+  $('lUndo').disabled = !learnUndo.length;
+  // Fortschritt
+  const marked = session.jumps.filter(x => x.at >= session.learnFrom && (x.label || x.fake));
+  const hits = marked.filter(x => x.hit != null).slice(-20);
+  const T = trainingSet();
+  $('lStats').textContent = `${marked.length} markiert in diesem Training · ` +
+    (hits.length ? `Tipp war ${hits.filter(x => x.hit).length} von ${hits.length} Mal richtig (letzte 20) · ` : '') +
+    (T.X.length >= 10 && T.classes >= 2 ? `Erkennung gelernt aus ${T.X.length} Sprüngen` : `feste Regeln, lernt ab 10 markierten (${T.X.length}/10)`);
+  $('lTime').textContent = fmtDur(Date.now() - session.start);
+}
+
+// ======================================================================
+// Export
+// ======================================================================
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function exportCsv(ses) {
+  const n = v => v == null ? '' : String(Math.round(v * 100) / 100).replace('.', ',');
+  const lines = ['zeit;art;markiert;fuss;hoehe_cm;hoehe_roh_cm;flug_ms;landung_g;anschlag;kontakt_ms;rsi;anlaufschritte;rhythmus_ms;anlauf_ms;seitlich;hoehe_L;hoehe_R;landung_L;landung_R'];
+  for (const j of ses.jumps) {
+    const a = j.app || {};
+    lines.push([new Date(j.at).toISOString(), typeOf(j), (j.label || j.fake) ? 'ja' : 'nein', FEET_TXT[j.feet], n(j.h), n(j.hRaw), j.flight, n(j.peak),
+                j.clipped ? 'ja' : '', j.contact || '', n(rsiOf(j)), a.n ?? '', (a.gaps || []).join(' '), a.dur || '', n(a.lat),
+                n(j.hL), n(j.hR), n(j.peakL), n(j.peakR)].join(';'));
+  }
+  const stamp = new Date(ses.start).toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  download(`training-${stamp}.csv`, '﻿' + lines.join('\r\n'), 'text/csv');
+}
+
+function exportBackup() {
+  const slug = (profile ? profile.name : 'profil').toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-');
+  download(`faltumtracker-${slug}.json`, JSON.stringify({ exportiert: new Date().toISOString(), profil: profile ? profile.name : null, trainings: saved }), 'application/json');
+}
+
+// ======================================================================
+// Demo ohne Hardware: erzeugt Schritte und Sprünge wie die Firmware v2
+// ======================================================================
+// Die Demo-Sensoren verhalten sich wie die Firmware v3: Puffer, Zeitsignal, Nachliefern.
+// demoOffline(true/false) simuliert einen Verbindungsabbruch (z. B. Bildschirm aus).
+const u16b = v => [v & 255, (v >> 8) & 255], u32b = v => [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >>> 24) & 255];
+
+function makeDemoSensor(side, t0) {
+  const s = newSensor('demo-' + side, 'VB-Schuh-' + side, true);
+  s.status = 'verbunden'; s.needReplay = true;
+  const ring = [];
+  const deliver = bytes => { if (!s.offline && sensors.has(s.key)) s.onEvent({ target: { value: new DataView(new Uint8Array(bytes).buffer) } }); };
+  s.fwNow = () => Date.now() - t0;
+  s.emit = bytes => { ring.push(bytes); if (ring.length > 6000) ring.shift(); deliver(bytes); };
+  s.ctrl = { writeValue: async u8 => {
+    if (u8[0] !== 2) return;
+    const from = new DataView(u8.buffer).getUint32(1, true);
+    const snap = ring.slice(), endT = snap.length ? new DataView(new Uint8Array(snap[snap.length - 1]).buffer).getUint32(1, true) : 0;
+    let n = 0;
+    for (const rec of snap) {
+      if (new DataView(new Uint8Array(rec).buffer).getUint32(1, true) < from) continue;
+      const c = rec.slice(); c[c.length - 1] |= 0x80;
+      setTimeout(() => deliver(c), n * 4); n++;
+    }
+    setTimeout(() => deliver([8, ...u32b(endT), ...u16b(n)]), n * 4 + 5);
+  } };
+  s.syncTimer = setInterval(() => { if (!sensors.has(s.key)) clearInterval(s.syncTimer); else deliver([7, ...u32b(s.fwNow())]); }, 1000);
+  setTimeout(() => deliver([7, ...u32b(s.fwNow())]), 50);
+  return s;
+}
+
+function demoOffline(off) {
+  for (const s of sensors.values()) if (s.demo) {
+    s.offline = off;
+    if (off) { s.status = 'getrennt'; s.replaying = false; }
+    else { s.status = 'verbunden'; s.offs = []; s.needReplay = true; s.liveMax = 0; }
+  }
+  renderSensors();
+}
+
+function startDemo() {
+  const t0 = Date.now() - 5000;                                   // Sensoruhr läuft "seit dem Einschalten"
+  for (const side of ['L', 'R']) if (!sensors.has('demo-' + side)) sensors.set('demo-' + side, makeDemoSensor(side, t0));
+  renderSensors();
+  const L = sensors.get('demo-L'), R = sensors.get('demo-R');
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const sendStep = (s, at, sideways) => {
+    const g = sideways ? [rnd(150, 300), rnd(120, 260), rnd(150, 300)] : [rnd(80, 200), rnd(500, 900), rnd(80, 200)];
+    s.emit([5, ...u32b(at - t0), ...u16b(Math.round(rnd(2, 5) * 100)), ...u16b(400), ...g.map(x => Math.round(x / 10)), 0]);
+  };
+  const sendJump = (s, landAt, flight, h, peak, contact) => {
+    s.emit([6, ...u32b(landAt - t0), ...u16b(flight), ...u16b(Math.round(h * 10)),
+      ...u16b(Math.round(peak * 100)), ...u16b(contact), peak >= 15.8 ? 1 : 0]);
+  };
+  const tick = () => {
+    if (!sensors.has('demo-L')) return;
+    const kind = Math.random();
+    const now = Date.now();
+    let steps = [], h, sideways = false;
+    if (kind < 0.5 || kind >= 0.8) {          // Angriff oder Aufschlag: 3-4 Schritte, letzter schnell
+      const serve = kind >= 0.8;
+      let t = now;
+      if (serve) t += 4500;                   // Aufschlag: vorher ruhig stehen
+      else { steps.push(t, t + 350); t += 1350; }   // Angriff: vorher in Bewegung (Lösen vom Netz)
+      const n = Math.random() < 0.5 ? 3 : 4;
+      const gaps = [];
+      for (let i = 0; i < n - 1; i++) gaps.push(i === n - 2 ? rnd(90, 220) : rnd(350, 550));
+      const lastGap = gaps[gaps.length - 1];
+      for (let i = 0; i < n; i++) { steps.push(t); t += gaps[i] || 0; }
+      h = (serve ? 32 : 38) + (220 - lastGap) * 0.06 + rnd(-5, 5);   // kürzerer Schlussschritt -> höher (für die Auswertung)
+    } else {                                  // Block: 0-2 seitliche Schritte
+      const n = Math.floor(rnd(0, 3)); let t = now;
+      for (let i = 0; i < n; i++) { steps.push(t); t += rnd(250, 400); }
+      h = rnd(22, 34); sideways = true;
+    }
+    steps.forEach((t, i) => setTimeout(() => sendStep(i % 2 ? R : L, t, sideways), Math.max(0, t - now) + 35));
+    const lastStep = steps.length ? steps[steps.length - 1] : now;
+    const contact = steps.length ? Math.round(rnd(180, 320)) : 0;
+    const takeoff = lastStep + (contact || 300);
+    const flight = Math.round(Math.sqrt(8 * h / 100 / G) * 1000);
+    const land = takeoff + flight, peak = rnd(4, 11);
+    const landR = land + Math.round(rnd(5, 60));
+    setTimeout(() => sendJump(L, land, flight, h, peak, contact), land - now + 85);
+    setTimeout(() => sendJump(R, landR, flight + Math.round(rnd(-10, 10)), h + rnd(-1, 1), peak * rnd(0.8, 1.2),
+                              contact ? contact + Math.round(rnd(-20, 20)) : 0), landR - now + 85);
+    // ein paar Schritte zwischendurch (Laufen)
+    for (let i = 0; i < 6; i++) { const t = land + 900 + i * 380; setTimeout(() => sendStep(i % 2 ? R : L, t, Math.random() < 0.3), t - now + 35); }
+    L.demoTimer = setTimeout(tick, land - now + rnd(3500, 6000));
+  };
+  tick();
+  toast('Demo läuft: erfundene Schritte und Sprünge');
+}
+
+// ======================================================================
+// Einstellungen und Schrittlänge messen
+// ======================================================================
+// Startwert der Schrittlänge aus der Körpergröße (Faustregel: etwa 0,415 × Größe)
+const stepFromHeight = cm => Math.round(cm * 0.415) / 100;
+
+function fillSettings() {
+  $('inMass').value = settings.mass; $('inStep').value = settings.stepLen; $('inDrop').value = settings.landDrop ?? 5;
+  $('inName').value = profile ? profile.name : '';
+  $('inHeight').value = profile && profile.height ? profile.height : '';
+}
+
+function initSettings() {
+  fillSettings();
+  $('inName').onchange = e => { const v = e.target.value.trim(); if (profile && v) { profile.name = v; saveProfiles(); renderProfileChip(); } else fillSettings(); };
+  $('inMass').onchange = e => { const v = parseFloat(e.target.value); if (v >= 30 && v <= 200) { settings.mass = v; saveProfiles(); renderAll(); } else fillSettings(); };
+  $('inHeight').onchange = e => {
+    const v = parseFloat(e.target.value);
+    if (!(v >= 120 && v <= 230)) { toast('Bitte eine Größe zwischen 120 und 230 cm eingeben.'); fillSettings(); return; }
+    profile.height = v;
+    if (!profile.stepMeasured) { settings.stepLen = stepFromHeight(v); toast(`Schrittlänge auf ${nf(settings.stepLen, 2)} m gesetzt`); }
+    saveProfiles(); fillSettings(); renderAll();
+  };
+  $('inStep').onchange = e => { const v = parseFloat(e.target.value); if (v > 0) { settings.stepLen = v; settings.stepMeasured = true; saveProfiles(); renderAll(); } };
+  $('inDrop').onchange = e => { const v = parseFloat(e.target.value); if (v >= 0 && v <= 20) { settings.landDrop = v; saveProfiles(); recorrectAll(); } else fillSettings(); };
+  $('btnCalib').onclick = () => {
+    if (!calib) { calib = { count: 0, sides: new Set() }; $('btnCalib').textContent = 'Fertig (0 Schritte)'; toast('Jetzt die Strecke laufen'); return; }
+    const c = calib; calib = null; $('btnCalib').textContent = 'Schrittlänge messen';
+    const steps = c.count * (c.sides.size === 1 ? 2 : 1);
+    if (steps < 6) { toast('Zu wenige Schritte erkannt (' + steps + ')'); return; }
+    const d = parseFloat(String(prompt(`${steps} Schritte erkannt. Wie viele Meter bist du gelaufen?`, '18')).replace(',', '.'));
+    if (!(d > 0)) return;
+    settings.stepLen = Math.round(d / steps * 100) / 100; settings.stepMeasured = true;
+    $('inStep').value = settings.stepLen; saveProfiles();
+    toast(`Schrittlänge: ${nf(settings.stepLen, 2)} m`); renderAll();
+  };
+}
+
+// ======================================================================
+// Profile und Farbschema
+// ======================================================================
+function applyTheme(key) {
+  const t = THEMES[key] || THEMES.onyx, r = document.documentElement;
+  r.classList.toggle('light', !!t.light);
+  r.style.setProperty('--acc', t.acc); r.style.setProperty('--acc-ink', t.ink); r.style.setProperty('--acc2', t.acc2);
+  document.querySelector('meta[name="theme-color"]').content = t.light ? '#f2f1ed' : '#0a0a0b';
+  document.querySelectorAll('#themes .th').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === key));
+}
+
+function renderThemes() {
+  $('themes').innerHTML = Object.entries(THEMES).map(([k, t]) =>
+    `<button class="th" data-k="${k}"><span class="sw" style="background:${t.body}"><i style="background:${t.logo}"></i></span>${t.name}</button>`).join('');
+  $('themes').querySelectorAll('.th').forEach(b => b.onclick = () => {
+    if (!profile) return;
+    profile.theme = b.dataset.k; saveProfiles(); applyTheme(profile.theme); renderCharts(view());
+  });
+}
+
+function renderProfileChip() {
+  $('btnProfile').hidden = !profile;
+  if (!profile) return;
+  $('profAv').textContent = profile.name.trim().charAt(0).toUpperCase() || '?';
+  $('profName').textContent = profile.name;
+}
+
+// Trainings eines Profils vorbereiten: Höhenkorrektur nachholen, alte Sprungarten entfernen
+async function prepareSessions(list) {
+  for (const ses of list) {
+    if (ses.jumps.some(j => j.hRaw == null)) {
+      ses.jumps.forEach(correctHeight);
+      if (ses !== session) { try { await dbPutSession(ses); } catch {} }
+    }
+    for (const j of ses.jumps) {
+      if (j.label && !TYPES.includes(j.label)) j.label = null;
+      if (j.pred && !TYPES.includes(j.pred)) j.pred = null;
+    }
+  }
+}
+
+async function activateProfile(id) {
+  const p = profiles.find(x => x.id === id);
+  if (!p) return;
+  if (session && profile && profile.id !== id) { toast('Beende erst das laufende Training.'); return; }
+  if (pending) { clearTimeout(pending.timer); pending = null; }
+  if (p.landDrop == null) p.landDrop = 5;
+  profile = p; settings = p;
+  saveLS('vb_activeProfile', id);
+  viewed = null; trainCache = null; pitchCache.clear();
+  saved = allSaved.filter(s => s.profileId === id).sort((a, b) => b.start - a.start);
+  session = null;
+  try { session = (await dbGetKV(curKey())) || null; } catch {}
+  await prepareSessions([...saved, session].filter(Boolean));
+  if (session) { toast('Laufendes Training wiederhergestellt'); requestWakeLock(); }
+  applyTheme(p.theme); fillSettings(); renderProfileChip(); renderAll(); renderProfiles();
+}
+
+async function createProfile() {
+  const name = $('pNewName').value.trim();
+  const mass = parseFloat(String($('pNewMass').value).replace(',', '.'));
+  const height = parseFloat(String($('pNewHeight').value).replace(',', '.'));
+  if (!name) { toast('Gib einen Namen ein.'); $('pNewName').focus(); return; }
+  if (!(mass >= 30 && mass <= 200)) { toast('Wie viel wiegst du? Bitte zwischen 30 und 200 kg.'); $('pNewMass').focus(); return; }
+  if (!(height >= 120 && height <= 230)) { toast('Wie groß bist du? Bitte zwischen 120 und 230 cm.'); $('pNewHeight').focus(); return; }
+  if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) { toast('Diesen Namen gibt es schon.'); return; }
+  if (session) { toast('Beende erst das laufende Training.'); return; }
+  const first = !profiles.length;
+  const old = first ? loadLS('vb_settings', {}) : {};
+  const p = { id: 'p' + Date.now().toString(36), name, mass, height,
+              stepLen: old.stepLen || stepFromHeight(height), stepMeasured: !!old.stepLen, landDrop: old.landDrop ?? 5,
+              theme: profile ? profile.theme : 'onyx', created: Date.now() };
+  profiles.push(p); saveProfiles();
+  if (first) {   // Daten aus Versionen ohne Profil gehören dem ersten Profil
+    const orphans = allSaved.filter(s => !s.profileId);
+    for (const s of orphans) { s.profileId = p.id; try { await dbPutSession(s); } catch {} }
+    try {
+      const cur = await dbGetKV('current');
+      if (cur) { cur.profileId = p.id; await dbSetKV('current:' + p.id, cur); await dbSetKV('current', null); }
+    } catch {}
+    try { localStorage.removeItem('vb_settings'); } catch {}
+    if (orphans.length) toast(`${orphans.length} bisherige Trainings gehören jetzt zu ${name}`, 4000);
+  }
+  $('pNewName').value = ''; $('pNewMass').value = ''; $('pNewHeight').value = '';
+  await activateProfile(p.id);
+  closeProfiles();
+}
+
+async function deleteProfile(p) {
+  if (session && profile && profile.id === p.id) { toast('Beende erst das laufende Training.'); return; }
+  const mine = allSaved.filter(s => s.profileId === p.id);
+  if (!confirm(`Profil „${p.name}“ mit ${mine.length} Trainings endgültig löschen? Das lässt sich nicht rückgängig machen.`)) return;
+  for (const s of mine) { try { await dbDelSession(s.id); } catch {} }
+  try { await dbSetKV('current:' + p.id, null); } catch {}
+  allSaved = allSaved.filter(s => s.profileId !== p.id);
+  profiles = profiles.filter(x => x !== p); saveProfiles();
+  if (profile === p) {
+    profile = null; settings = { mass: 75, stepLen: 0.6, landDrop: 5 };
+    if (profiles.length) await activateProfile(profiles[0].id);
+    else { saved = []; session = null; renderProfileChip(); renderAll(); openProfiles(true); }
+  }
+  renderProfiles();
+}
+
+function renderProfiles() {
+  const list = $('pList');
+  if (!profiles.length) { list.innerHTML = '<div class="empty">Noch kein Profil.</div>'; return; }
+  list.innerHTML = '';
+  for (const p of profiles) {
+    const n = allSaved.filter(s => s.profileId === p.id).length;
+    const t = THEMES[p.theme] || THEMES.onyx;
+    const row = document.createElement('div');
+    row.className = 'prof' + (profile === p ? ' active' : '');
+    row.innerHTML = `<span class="av" style="background:${t.acc};color:${t.ink}">${esc(p.name.charAt(0).toUpperCase())}</span>
+      <div class="grow"><div class="name">${esc(p.name)}</div><div class="info">${n} ${n === 1 ? 'Training' : 'Trainings'} · ${nf(p.mass, 0)} kg${p.height ? ' · ' + p.height + ' cm' : ''}</div></div>
+      ${profile === p ? '' : '<button class="small" data-a="use">Wählen</button>'}
+      <button class="ghost small" data-a="del">Löschen</button>`;
+    const u = row.querySelector('[data-a=use]');
+    if (u) u.onclick = async () => { await activateProfile(p.id); if (profile === p) closeProfiles(); };
+    row.querySelector('[data-a=del]').onclick = () => deleteProfile(p);
+    list.appendChild(row);
+  }
+}
+
+function openProfiles(force = false) {
+  renderProfiles();
+  $('profiles').hidden = false; document.body.style.overflow = 'hidden';
+  $('pClose').hidden = force || !profile;
+  $('pIntro').textContent = profiles.length
+    ? 'Jedes Profil hat eigene Trainings, eigene Einstellungen und eine eigene Sprungerkennung. Nichts wird zwischen Profilen gemischt.'
+    : 'Willkommen bei FaltumTracker. Leg zuerst ein Profil an. Unter diesem Profil werden deine Trainings gespeichert.';
+  if (!profiles.length) {
+    const old = loadLS('vb_settings', {});
+    if (old.mass && !$('pNewMass').value) $('pNewMass').value = old.mass;
+    setTimeout(() => $('pNewName').focus(), 50);
+  }
+}
+function closeProfiles() { if (!profile) return; $('profiles').hidden = true; document.body.style.overflow = ''; }
+
+function toggleMenu(show) {
+  const m = $('pMenu');
+  if (show === undefined) show = m.hidden;
+  if (show) {
+    const r = $('btnProfile').getBoundingClientRect();
+    m.style.top = (r.bottom + 8) + 'px';
+    m.style.right = Math.max(10, window.innerWidth - r.right) + 'px';
+  }
+  m.hidden = !show;
+}
+function openSettings() { toggleMenu(false); fillSettings(); applyTheme(profile.theme); $('settings').hidden = false; document.body.style.overflow = 'hidden'; }
+function closeSettings() { $('settings').hidden = true; document.body.style.overflow = ''; renderAll(); }
+document.addEventListener('click', e => {
+  if (!$('pMenu').hidden && !e.target.closest('#pMenu') && !e.target.closest('#btnProfile')) toggleMenu(false);
+});
+
+// ======================================================================
+// Start
+// ======================================================================
+function checkSupport() {
+  const w = $('warn'), msgs = [];
+  if (!window.isSecureContext) msgs.push('Die Seite muss über https geöffnet werden, sonst gibt es kein Bluetooth.');
+  if (!navigator.bluetooth) msgs.push('Dieser Browser kann kein Web-Bluetooth. Auf Android Chrome verwenden.');
+  if (msgs.length) { w.textContent = msgs.join(' ') + ' Die Demo funktioniert trotzdem.'; w.hidden = false; $('btnConnect').disabled = true; }
+  else if (navigator.bluetooth.getAvailability) {
+    navigator.bluetooth.getAvailability().then(ok => {
+      if (!ok) { w.textContent = 'Bluetooth ist aus oder nicht vorhanden. Bluetooth und Standort einschalten.'; w.hidden = false; }
+    });
+  }
+}
+
+async function init() {
+  checkSupport(); initSettings();
+  $('btnConnect').onclick = connectNew;
+  $('btnDemo').onclick = startDemo;
+  $('btnSession').onclick = () => session ? stopSession() : startSession();
+  $('btnBackup').onclick = exportBackup;
+  $('btnBack').onclick = () => { viewed = null; renderAll(); };
+  $('btnLearn').onclick = openLearn;
+  $('lClose').onclick = closeLearn;
+  $('lBtnStart').onclick = learnStart;
+  $('lBtnConnect').onclick = connectNew;
+  $('lBtnDemo').onclick = startDemo;
+  $('lStop').onclick = () => { if (confirm('Training beenden und speichern?')) stopSession(); };
+  $('lSkip').onclick = () => { const q = learnQueue(); if (q.length) learnSkip(q[0]); };
+  $('lUndo').onclick = learnUndoLast;
+  $('btnProfile').onclick = () => toggleMenu();
+  $('mSettings').onclick = openSettings;
+  $('mProfiles').onclick = () => { toggleMenu(false); openProfiles(); };
+  $('sClose').onclick = closeSettings;
+  $('btnBackup2').onclick = exportBackup;
+  $('pClose').onclick = closeProfiles;
+  $('pCreate').onclick = createProfile;
+  ['pNewName', 'pNewMass', 'pNewHeight'].forEach(id => $(id).onkeydown = e => { if (e.key === 'Enter') createProfile(); });
+  $('lBtnConnect').disabled = $('btnConnect').disabled;
+  window.addEventListener('resize', () => renderCharts(view()));
+  setInterval(() => {
+    $('sessTime').textContent = session ? fmtDur(Date.now() - session.start) : '00:00';
+    if (learnOpen && session) $('lTime').textContent = fmtDur(Date.now() - session.start);
+    if (dirty) saveCurrent();
+    if (session && !viewed && session.steps.length !== renderAll.lastSteps) {   // neue Schritte -> Kacheln auffrischen
+      renderAll.lastSteps = session.steps.length; renderStats(session);
+    }
+  }, 1000);
+
+  try {
+    db = await idbOpen();
+    // Übernahme aus v0.1 (localStorage)
+    const old = loadLS('vb_sessions', null);
+    if (old && old.length) {
+      for (const s of old) { s.steps = s.steps || []; s.jumps.forEach(j => { j.app = null; j.label = null; j.pred = null; j.contact = 0; }); await dbPutSession(s); }
+      localStorage.removeItem('vb_sessions'); localStorage.removeItem('vb_current');
+      toast(old.length + ' Trainings aus v0.1 übernommen');
+    }
+    allSaved = await dbAllSessions();
+  } catch (e) {
+    toast('Speicher nicht verfügbar: ' + e.message, 6000);
+  }
+  renderThemes();
+  const last = loadLS('vb_activeProfile', null);
+  if (profiles.length) await activateProfile(profiles.some(p => p.id === last) ? last : profiles[0].id);
+  else { applyTheme('onyx'); openProfiles(true); }
+  renderSensors(); renderAll();
+}
+init();
+</script>
+</body>
+</html>
