@@ -122,6 +122,32 @@
   .mitem { display: block; width: 100%; text-align: left; background: transparent; color: var(--text); box-shadow: none;
     border-radius: 12px; text-transform: none; letter-spacing: 0; font-size: 16px; font-weight: 700; padding: 12px 14px; min-height: 46px; }
   .mitem:hover, .mitem:focus-visible { background: var(--card2); }
+  .tile { position: relative; }
+  .ib { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; min-height: 0; padding: 0; border-radius: 50%;
+    background: transparent; color: var(--dim); box-shadow: inset 0 0 0 1.5px var(--line); font-size: 12px; font-weight: 800;
+    letter-spacing: 0; text-transform: none; font-family: Georgia, serif; font-style: italic; line-height: 24px; }
+  .tile .lbl { padding-right: 26px; }
+  details.more { margin-top: 14px; }
+  details.more > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--line); font-size: 12px; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
+  details.more > summary::-webkit-details-marker { display: none; }
+  details.more > summary::after { content: "+"; font-size: 16px; }
+  details.more[open] > summary::after { content: "–"; }
+  details.fold > summary { list-style: none; cursor: pointer; font-size: 12px; color: var(--dim); font-weight: 800; margin: 22px 0 10px;
+    text-transform: uppercase; letter-spacing: .14em; }
+  details.fold > summary::-webkit-details-marker { display: none; }
+  details.fold > summary::after { content: " +"; }
+  details.fold[open] > summary::after { content: " –"; }
+  .sheetbg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 8; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: var(--card); border: 1px solid var(--line); border-radius: 22px 22px 0 0; width: 100%; max-width: 640px; max-height: 82vh;
+    overflow-y: auto; padding: 20px 18px calc(18px + env(safe-area-inset-bottom)); }
+  .sheet h3 { margin: 0 0 8px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .sheet p { margin: 0 0 12px; }
+  .sheet .mine { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; }
+  .sheet .mine b { font-size: 24px; letter-spacing: -.02em; }
+  .sheet ul { margin: 0 0 12px; padding-left: 18px; } .sheet li { margin-bottom: 6px; }
+  .sheet .src { color: var(--dim); font-size: 13px; }
   #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--text); color: var(--bg);
     padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; display: none; max-width: 90vw; z-index: 10; text-align: center; }
   @media (max-width: 420px) { .last .num { font-size: 88px; } .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } label.field > span:first-child { min-width: 96px; } }
@@ -130,7 +156,7 @@
 <body>
 
 <header>
-  <div class="brand"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg><span class="ver">v0.8</span></div>
+  <div class="brand"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg><span class="ver">v0.9</span></div>
   <button id="btnProfile" class="chip" hidden><span id="profAv" class="av"></span><span id="profName"></span></button>
 </header>
 
@@ -175,13 +201,15 @@
   <h2>Was noch drin ist</h2>
   <div id="insight" class="note"></div>
 
-  <h2>Alle Sprünge</h2>
+  <details class="fold">
+  <summary>Alle Sprünge</summary>
   <div class="tablewrap">
     <table>
       <thead><tr><th class="l">Zeit</th><th class="l">Art</th><th class="l">Fuß</th><th>Höhe</th><th>Anlauf</th><th>Rhythmus (ms)</th><th>Kontakt</th><th>RSI</th><th>Landung</th></tr></thead>
       <tbody id="jumpRows"></tbody>
     </table>
   </div>
+  </details>
 </section>
 
 
@@ -282,6 +310,13 @@
     <h2>Daten</h2>
     <div class="row"><button id="btnBackup2" class="ghost small">Trainings dieses Profils als JSON sichern</button></div>
   </section>
+</div>
+
+<div id="infoBg" class="sheetbg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div id="infoBody"></div>
+    <button id="infoClose" style="width:100%;margin-top:6px">Schließen</button>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -1031,43 +1066,157 @@ function renderSensors() {
   }
 }
 
-function tile(label, val, hint) {
-  return `<div class="tile"><div class="lbl">${label}</div><div class="val">${val}</div>${hint ? `<div class="hint">${hint}</div>` : ''}</div>`;
+function tile(label, val, hint, key) {
+  return `<div class="tile">${key ? `<button class="ib" data-k="${key}" aria-label="Info zu ${label}">i</button>` : ''}<div class="lbl">${label}</div><div class="val">${val}</div>${hint ? `<div class="hint">${hint}</div>` : ''}</div>`;
 }
+let moreOpen = false;
 
 function renderStats(ses) {
   const r = ses ? analyze(ses) : { n: 0, feet: { L: 0, R: 0, B: 0 } };
   const no = !ses || !ses.v2;
   const step = no ? 'braucht Firmware v2' : '';
   $('stats').innerHTML =
+    `<div class="tiles">` +
+      tile('Sprünge', r.n, '', 'n') +
+      tile('Sprünge pro Minute', nf(r.jpm), r.jpmActive ? `${nf(r.jpmActive)} in aktiver Zeit` : 'über die ganze Zeit', 'jpm') +
+      tile('Bester', r.n ? nf(r.best) + ' cm' : '–', '', 'best') +
+      tile('Schnitt', r.n ? nf(r.avg) + ' cm' : '–', r.sd ? `± ${nf(r.sd)} cm Streuung` : '', 'avg') +
+      tile('Explosivität (RSI)', r.rsi ? nf(r.rsi, 2) : '–', step || (r.rsiBest ? `beste ${nf(r.rsiBest, 2)}` : ''), 'rsi') +
+      tile('Strecke', no ? '–' : nf(r.dist / 1000, 2) + ' km', no ? step : 'grob geschätzt', 'dist') +
+    `</div>` +
+    `<details class="more"${moreOpen ? ' open' : ''}><summary>Weitere Werte</summary>` +
     `<h2>Sprünge</h2><div class="tiles">` +
-      tile('Sprünge', r.n) +
-      tile('Sprünge pro Minute', nf(r.jpm), r.jpmActive ? `${nf(r.jpmActive)} in aktiver Zeit` : 'über die ganze Zeit') +
-      tile('Bester', r.n ? nf(r.best) + ' cm' : '–') +
-      tile('Schnitt', r.n ? nf(r.avg) + ' cm' : '–', r.sd ? `± ${nf(r.sd)} cm Streuung` : '') +
-      tile('Ermüdung', r.fatigue != null ? nf(r.fatigue, 0) + ' %' : '–', 'letzte 10 gegen erste 10') +
-      tile('Links / Rechts / Beide', `${r.feet.L}/${r.feet.R}/${r.feet.B}`, 'Landung auf') +
+      tile('Ermüdung', r.fatigue != null ? nf(r.fatigue, 0) + ' %' : '–', 'letzte 10 gegen erste 10', 'fatigue') +
+      tile('Links / Rechts / Beide', `${r.feet.L}/${r.feet.R}/${r.feet.B}`, 'Landung auf', 'feet') +
     `</div>` +
     `<h2>Absprung</h2><div class="tiles">` +
-      tile('Absprung­geschwindigkeit', r.v0 ? nf(r.v0, 2) + ' m/s' : '–', r.v0Best ? `beste ${nf(r.v0Best, 2)} m/s` : '') +
-      tile('Kontaktzeit vor dem Absprung', r.contact ? nf(r.contact, 0) + ' ms' : '–', step || 'letzter Bodenkontakt') +
-      tile('Explosivität (RSI)', r.rsi ? nf(r.rsi, 2) : '–', step || (r.rsiBest ? `beste ${nf(r.rsiBest, 2)} · Höhe in m ÷ Kontakt in s` : 'Höhe in m ÷ Kontaktzeit in s')) +
-      tile('Absprungkraft', r.force ? nf(r.force, 0) + ' N' : '–', r.force ? `${nf(r.force / (settings.mass * G), 1)}-faches Körpergewicht, grob` : step) +
-      tile('Leistung', r.n ? nf(r.powerAvg, 0) + ' W' : '–', r.n ? `beste ${nf(r.powerBest, 0)} W, Richtwert` : '') +
+      tile('Absprung­geschwindigkeit', r.v0 ? nf(r.v0, 2) + ' m/s' : '–', r.v0Best ? `beste ${nf(r.v0Best, 2)} m/s` : '', 'v0') +
+      tile('Kontaktzeit vor dem Absprung', r.contact ? nf(r.contact, 0) + ' ms' : '–', step || 'letzter Fuß am Boden', 'contact') +
+      tile('Absprungkraft', r.force ? nf(r.force, 0) + ' N' : '–', r.force ? `${nf(r.force / (settings.mass * G), 1)}-faches Körpergewicht, grob` : step, 'force') +
+      tile('Leistung', r.n ? nf(r.powerAvg, 0) + ' W' : '–', r.n ? `beste ${nf(r.powerBest, 0)} W, Richtwert` : '', 'power') +
     `</div>` +
     `<h2>Laufen</h2><div class="tiles">` +
-      tile('Schritte', no ? '–' : r.steps, no ? step : (r.oneSided ? 'nur ein Schuh, hochgerechnet' : '')) +
-      tile('Strecke', no ? '–' : nf(r.dist / 1000, 2) + ' km', no ? step : `grob, ${nf(settings.stepLen, 2)} m pro Schritt`) +
-      tile('Schnellste Schrittfolge', r.cadMax ? nf(r.cadMax) + ' /s' : '–', no ? step : 'Schritte pro Sekunde, über 3 s') +
-      tile('Aktive Zeit', r.activeMin ? fmtDur(r.activeMin * 60000) : '–', 'ohne Pausen über 5 s') +
+      tile('Schritte', no ? '–' : r.steps, no ? step : (r.oneSided ? 'nur ein Schuh, hochgerechnet' : ''), 'steps') +
+      tile('Schnellste Schrittfolge', r.cadMax ? nf(r.cadMax) + ' /s' : '–', no ? step : 'Schritte pro Sekunde, über 3 s', 'cad') +
+      tile('Aktive Zeit', r.activeMin ? fmtDur(r.activeMin * 60000) : '–', 'ohne Pausen über 5 s', 'active') +
     `</div>` +
     `<h2>Landung</h2><div class="tiles">` +
-      tile('Härteste Landung', r.n ? nf(r.peakMax) + ' g' : '–', r.clipped ? `${r.clipped}× Sensor am Anschlag` : 'gemessen am Schuh') +
-      tile('Schnitt Landung', r.n ? nf(r.peakAvg) + ' g' : '–') +
-      tile('Landebelastung', r.n ? nf(r.load, 0) : '–', 'Summe aller Landespitzen in g') +
-      tile('Seitenunterschied', r.asym != null ? nf(Math.abs(r.asym), 0) + ' % ' + (r.asym > 0 ? 'links' : 'rechts') : '–', 'härter landender Fuß') +
-    `</div>`;
+      tile('Härteste Landung', r.n ? nf(r.peakMax) + ' g' : '–', r.clipped ? `${r.clipped}× Sensor am Anschlag` : 'gemessen am Schuh', 'peakMax') +
+      tile('Schnitt Landung', r.n ? nf(r.peakAvg) + ' g' : '–', '', 'peakAvg') +
+      tile('Landebelastung', r.n ? nf(r.load, 0) : '–', 'Summe aller Landespitzen in g', 'load') +
+      tile('Seitenunterschied', r.asym != null ? nf(Math.abs(r.asym), 0) + ' % ' + (r.asym > 0 ? 'links' : 'rechts') : '–', 'härter landender Fuß', 'asym') +
+    `</div></details>`;
+  const d = $('stats').querySelector('details.more');
+  d.addEventListener('toggle', () => { moreOpen = d.open; });
 }
+
+// ======================================================================
+// Info zu jedem Wert: Erklärung, eigener Schnitt, Vergleichswerte
+// ======================================================================
+// get: Wert aus analyze() für den eigenen Schnitt; fmt: Anzeige
+const INFO = {
+  n: { t: 'Sprünge', get: r => r.n, fmt: v => nf(v, 0) + ' pro Training',
+    what: 'Alle erkannten Sprünge in diesem Training. Ein beidbeiniger Sprung zählt einmal.',
+    ref: ['Profis: 54–90 Sprünge pro Spiel und 45–128 Sprünge pro Trainingsstunde.',
+          'Zuspieler springen auf internationalem Niveau 18–22-mal pro Satz, Mittelblocker 18–23-mal.'],
+    src: 'Bahr & Bahr 2014; Sheppard u. a. 2009; Esper 2013 (zitiert in Lima u. a. 2019, Retos 36, und Lima u. a. 2019, J. Hum. Kinet.)' },
+  jpm: { t: 'Sprünge pro Minute', get: r => r.jpm, fmt: v => nf(v),
+    what: 'Sprünge geteilt durch die Trainingsdauer. Der kleine Wert darunter rechnet Pausen über 5 Sekunden heraus.',
+    ref: ['Profis der ersten portugiesischen Liga im Training: im Schnitt etwa 1,0 bis 1,3 Sprünge pro Minute, je nach Abstand zum Spieltag.'],
+    src: 'Lima u. a. 2023, Scientific Reports' },
+  best: { t: 'Bester Sprung', get: r => r.best, fmt: v => nf(v) + ' cm',
+    what: 'Der höchste Sprung im Training, aus der Flugzeit berechnet und für die Landehaltung korrigiert.',
+    ref: ['Angriffssprung, Profis der ersten slowenischen Liga: 64,4 cm im Schnitt, zweite Liga: 60,7 cm.',
+          'Blocksprung, gleiche Studie: 49,1 cm (erste Liga), 46,9 cm (zweite Liga).',
+          'Frauen, erste portugiesische Liga (beste Gruppe): Angriffssprung 43 cm, Blocksprung 36 cm.',
+          'Profis im Maximaltest mit Anlauf, gemessen mit VERT an der Hüfte: Männer 92,5 cm, Frauen 70,4 cm.'],
+    note: 'Die Studien messen mit verschiedenen Methoden. VERT lag in einer Prüfung im Schnitt 5,5 cm daneben. Die Zahlen sind deshalb nur grob mit deinen vergleichbar.',
+    src: 'Sattler u. a. (zitiert in Pawlik & Mroczek 2023, Scientific Reports); Studie zu Spielerinnen in Portugal (PMC7052714); Biology of Sport 43/2026; Skazalski u. a. 2018' },
+  avg: { t: 'Schnitt der Sprunghöhe', get: r => r.avg, fmt: v => nf(v) + ' cm',
+    what: 'Durchschnitt aller Sprünge in diesem Training, egal ob Angriff, Block oder Aufschlag.',
+    ref: ['Profis im Spiel, alle Sprünge zusammen (VERT an der Hüfte): Männer 57,2 cm, Frauen 41,7 cm.'],
+    note: 'Im Training springt man oft nicht voll. Der Schnitt liegt deshalb meist deutlich unter dem besten Sprung.',
+    src: 'Biology of Sport 43/2026 (Saison 2024/25, 24 Profis)' },
+  rsi: { t: 'Explosivität (RSI)', get: r => r.rsi, fmt: v => nf(v, 2),
+    what: 'Sprunghöhe in Metern geteilt durch die Kontaktzeit des letzten Fußes in Sekunden. Hoch ist er, wenn du kurz am Boden bist und trotzdem hoch springst.',
+    ref: ['Für Anlaufsprünge im Volleyball habe ich keine veröffentlichten Vergleichswerte gefunden. Die bekannten RSI-Normen stammen aus Niedersprüngen von einer Kiste und sind nicht vergleichbar.'],
+    note: 'Am aussagekräftigsten ist der Vergleich mit deinem eigenen Schnitt über die Wochen.' },
+  dist: { t: 'Strecke', get: r => r.dist / 1000, fmt: v => nf(v, 2) + ' km',
+    what: 'Schritte mal Schrittlänge. Weil kleine und große Schritte gleich zählen, ist das eine grobe Schätzung. Messe die Schrittlänge in den Einstellungen, dann wird sie genauer.',
+    ref: ['Spieler legen im Spiel im Schnitt 1221 m zurück (3 Sätze) und 1757 m (4 Sätze). Am meisten laufen die Zuspieler, am wenigsten die Mittelblocker.'],
+    src: 'Januszkiewicz u. a., Messung von Spielern in Spielen' },
+  fatigue: { t: 'Ermüdung', get: r => r.fatigue, fmt: v => nf(v, 0) + ' %',
+    what: 'Wie viel höher oder niedriger deine letzten 10 Sprünge im Vergleich zu deinen ersten 10 waren. Negativ heißt: am Ende niedriger.',
+    ref: ['Bei Profi-Männern nehmen Angriffs-, Block- und Aufschlagsprünge von Satz zu Satz ab, bei Frauen fand dieselbe Studie das Gegenteil.'],
+    src: 'Pawlik & Mroczek 2023, Scientific Reports' },
+  feet: { t: 'Links / Rechts / Beide', get: null,
+    what: 'Auf welchem Fuß du gelandet bist. „Beide“ heißt, beide Schuhe haben innerhalb von 0,25 Sekunden aufgesetzt.',
+    ref: ['Vergleichswerte dazu habe ich nicht gefunden.'] },
+  v0: { t: 'Absprunggeschwindigkeit', get: r => r.v0, fmt: v => nf(v, 2) + ' m/s',
+    what: 'Wie schnell du beim Abheben nach oben unterwegs bist, berechnet aus der Sprunghöhe.',
+    ref: ['Umgerechnet aus den Angriffssprüngen der ersten slowenischen Liga (64,4 cm): etwa 3,55 m/s. Bei 49,1 cm Blocksprung: etwa 3,10 m/s.'],
+    note: 'Das ist meine Umrechnung mit derselben Formel, die die App nutzt, keine eigene Messung der Studie.' },
+  contact: { t: 'Kontaktzeit vor dem Absprung', get: r => r.contact, fmt: v => nf(v, 0) + ' ms',
+    what: 'Wie lange der letzte Fuß beim Absprung am Boden steht, vom Aufsetzen bis zum Abheben.',
+    ref: ['Eine Fallstudie mit zwei Spielerinnen: Beim Step-Close-Anlauf standen die Füße zusammen 0,37 s am Boden, beim Hop-Anlauf 0,28 s.'],
+    note: 'Die Studie misst beide Füße zusammen, die App nur den letzten Fuß. Deine Werte sind deshalb kürzer.',
+    src: 'ISBS-Konferenzband, Fallstudie zum Angriffssprung' },
+  force: { t: 'Absprungkraft', get: r => r.force, fmt: v => nf(v, 0) + ' N',
+    what: 'Mittlere Kraft beim letzten Bodenkontakt, aus Absprunggeschwindigkeit, Kontaktzeit und Körpergewicht. Die Rechnung nimmt an, dass du beim Aufsetzen stillstehst. Weil du dich im Anlauf aber schon bewegst, kommt eher zu wenig heraus.',
+    ref: ['Für diese Rechnung gibt es keine passenden Vergleichswerte. Kraftmessplatten in Studien messen anders.'] },
+  power: { t: 'Leistung', get: r => r.powerAvg, fmt: v => nf(v, 0) + ' W',
+    what: 'Geschätzt mit der Sayers-Formel aus Sprunghöhe und Körpergewicht. Die Formel ist für Sprünge aus dem Stand gemacht, für Anlaufsprünge ist sie nur ein Richtwert.',
+    ref: ['Vergleichswerte für Anlaufsprünge mit dieser Formel habe ich nicht gefunden.'],
+    src: 'Sayers u. a. 1999' },
+  steps: { t: 'Schritte', get: r => r.steps, fmt: v => nf(v, 0),
+    what: 'Alle Bodenkontakte beider Schuhe. Mit nur einem Schuh rechnet die App hoch.',
+    ref: ['Vergleichswerte für Schritte im Volleyball habe ich nicht gefunden. Für die Strecke gibt es welche, siehe dort.'] },
+  cad: { t: 'Schnellste Schrittfolge', get: r => r.cadMax, fmt: v => nf(v) + ' /s',
+    what: 'Die meisten Schritte pro Sekunde in einem 3-Sekunden-Fenster. Zeigt, wie schnell deine Beine bei kurzen Antritten sind.',
+    ref: ['Vergleichswerte habe ich nicht gefunden.'] },
+  active: { t: 'Aktive Zeit', get: r => r.activeMin, fmt: v => fmtDur(v * 60000),
+    what: 'Die Zeit, in der du in Bewegung warst. Pausen über 5 Sekunden ohne Schritt oder Sprung zählen nicht mit.',
+    ref: ['Im Spiel dauern 80 % der Ballwechsel höchstens 10 Sekunden.'],
+    src: 'Hank u. a. 2024, PeerJ' },
+  peakMax: { t: 'Härteste Landung', get: r => r.peakMax, fmt: v => nf(v) + ' g',
+    what: 'Die größte Beschleunigung bei einer Landung, gemessen am Schuh. 1 g ist die Erdanziehung.',
+    ref: ['Profis im Spiel, gemessen mit VERT an der Hüfte: Männer im Schnitt 10,4 g, Frauen 8,4 g pro Landung.'],
+    note: 'Am Schuh sind die Werte deutlich höher als an der Hüfte, weil Beine und Gelenke den Stoß auf dem Weg nach oben abfedern. Direkt vergleichen lassen sich die Zahlen nicht.',
+    src: 'Biology of Sport 43/2026' },
+  peakAvg: { t: 'Schnitt Landung', get: r => r.peakAvg, fmt: v => nf(v) + ' g',
+    what: 'Durchschnitt der Landespitzen am Schuh in diesem Training.',
+    ref: ['Profis im Spiel, VERT an der Hüfte: Männer 10,4 g, Frauen 8,4 g. Am Schuh liegen die Werte höher.'],
+    src: 'Biology of Sport 43/2026' },
+  load: { t: 'Landebelastung', get: r => r.load, fmt: v => nf(v, 0),
+    what: 'Alle Landespitzen zusammengezählt. Viele Sprünge oder harte Landungen erhöhen den Wert. Nützlich, um Trainings miteinander zu vergleichen.',
+    ref: ['Ein eigener Wert der App, dafür gibt es keine Vergleichswerte.'] },
+  asym: { t: 'Seitenunterschied', get: r => r.asym != null ? Math.abs(r.asym) : null, fmt: v => nf(v, 0) + ' %',
+    what: 'Wie viel härter ein Fuß bei beidbeinigen Landungen aufkommt als der andere. Braucht mindestens 5 beidbeinige Landungen.',
+    ref: ['Vergleichswerte für diese Messung am Schuh habe ich nicht gefunden.'] }
+};
+
+function myAverage(key) {
+  const info = INFO[key];
+  if (!info.get) return null;
+  const all = [...saved]; if (session && !saved.includes(session)) all.push(session);
+  const vals = all.filter(x => x.jumps.length).map(x => info.get(analyze(x))).filter(v => v != null && isFinite(v));
+  return vals.length ? { v: mean(vals), n: vals.length } : null;
+}
+
+function openInfo(key) {
+  const info = INFO[key]; if (!info) return;
+  const m = myAverage(key);
+  $('infoBody').innerHTML =
+    `<h3>${esc(info.t)}</h3><p>${esc(info.what)}</p>` +
+    (info.get ? `<div class="mine"><div class="info">Dein Schnitt</div>${m
+      ? `<b>${esc(info.fmt(m.v))}</b><div class="info">über ${m.n} ${m.n === 1 ? 'Training' : 'Trainings'}</div>`
+      : '<div class="info">Noch keine Trainings.</div>'}</div>` : '') +
+    `<h2 style="margin-top:4px">Vergleich</h2><ul>${info.ref.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` +
+    (info.note ? `<p class="info">${esc(info.note)}</p>` : '') +
+    (info.src ? `<div class="src">Quelle: ${esc(info.src)}</div>` : '');
+  $('infoBg').hidden = false; document.body.style.overflow = 'hidden';
+}
+function closeInfo() { $('infoBg').hidden = true; document.body.style.overflow = ''; }
 
 function renderLast(ses, flash) {
   const J = jumpsOf(ses);
@@ -1665,6 +1814,9 @@ async function init() {
   $('lStop').onclick = () => { if (confirm('Training beenden und speichern?')) stopSession(); };
   $('lSkip').onclick = () => { const q = learnQueue(); if (q.length) learnSkip(q[0]); };
   $('lUndo').onclick = learnUndoLast;
+  $('stats').addEventListener('click', e => { const b = e.target.closest('.ib'); if (b) openInfo(b.dataset.k); });
+  $('infoClose').onclick = closeInfo;
+  $('infoBg').addEventListener('click', e => { if (e.target === $('infoBg')) closeInfo(); });
   $('btnProfile').onclick = () => toggleMenu();
   $('mSettings').onclick = openSettings;
   $('mProfiles').onclick = () => { toggleMenu(false); openProfiles(); };
