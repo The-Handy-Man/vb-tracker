@@ -148,6 +148,27 @@
   .sheet .mine b { font-size: 24px; letter-spacing: -.02em; }
   .sheet ul { margin: 0 0 12px; padding-left: 18px; } .sheet li { margin-bottom: 6px; }
   .sheet .src { color: var(--dim); font-size: 13px; }
+  .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; vertical-align: -2px; margin-right: 4px; }
+  .bars i { width: 4px; background: var(--line); border-radius: 1px; }
+  .bars i:nth-child(1) { height: 4px; } .bars i:nth-child(2) { height: 7px; } .bars i:nth-child(3) { height: 10px; } .bars i:nth-child(4) { height: 14px; }
+  .bars.q4 i, .bars.q3 i:nth-child(-n+3), .bars.q2 i:nth-child(-n+2), .bars.q1 i:nth-child(1) { background: var(--ok); }
+  .bars.q1 i:nth-child(1) { background: #ffb020; }
+  .autohint { margin-top: 10px; }
+  /* Verbinden-Bildschirm */
+  #connect .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .slot { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 18px 14px; text-align: center; }
+  .slot .big { font-size: 44px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+  .slot .st { margin-top: 10px; font-size: 13px; color: var(--dim); min-height: 36px; }
+  .slot.on { border-color: var(--ok); }
+  .slot .dot { display: inline-block; margin-right: 6px; vertical-align: 0; }
+  /* Kurzanzeige der Sensoren auf der Hauptseite */
+  .sbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .spill { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--card); color: var(--text); font-size: 13px; font-weight: 800; letter-spacing: .04em; min-height: 0; text-transform: none; box-shadow: none; }
+  .sbar .grow { flex: 1; }
+  textarea.export { width: 100%; height: 40vh; font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--card2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 14px; padding: 10px; resize: vertical; }
+  label.field select, label.field textarea { font: inherit; background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; flex: 1; min-width: 0; }
   #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--text); color: var(--bg);
     padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; display: none; max-width: 90vw; z-index: 10; text-align: center; }
   @media (max-width: 420px) { .last .num { font-size: 88px; } .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } label.field > span:first-child { min-width: 96px; } }
@@ -156,20 +177,16 @@
 <body>
 
 <header>
-  <div class="brand"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg><span class="ver">v0.9</span></div>
+  <div class="brand"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg><span class="ver">v0.12</span></div>
   <button id="btnProfile" class="chip" hidden><span id="profAv" class="av"></span><span id="profName"></span></button>
 </header>
 
-<div id="warn" class="warn" hidden></div>
-
-<section>
-  <h2>Sensoren</h2>
-  <div id="sensorList"><div class="empty">Noch kein Sensor verbunden.</div></div>
-  <div class="row" style="margin-top:10px">
-    <button id="btnConnect">Sensor verbinden</button>
-    <button id="btnDemo" class="ghost">Demo-Sensoren</button>
-  </div>
-</section>
+<div id="sbar" class="sbar">
+  <button id="pillL" class="spill"></button>
+  <button id="pillR" class="spill"></button>
+  <span class="grow"></span>
+  <button id="btnSensors" class="ghost small">Sensoren</button>
+</div>
 
 <section>
   <div id="viewBanner" class="banner" hidden><span id="viewTitle"></span><button id="btnBack" class="small">Zurück zum Live-Training</button></div>
@@ -212,6 +229,12 @@
   </details>
 </section>
 
+
+<section>
+  <h2>Trainingsplan mit KI</h2>
+  <p class="info" style="margin-top:0">Gibt deine Trainings der letzten 4 Wochen als Text aus, zusammen mit einem Prompt. Den kopierst du in die KI, die du sowieso nutzt, und bekommst einen Trainingsplan. Ziel und Position stellst du in den Einstellungen ein.</p>
+  <button id="btnExport" style="width:100%">Daten für KI kopieren</button>
+</section>
 
 <section>
   <h2>Gespeicherte Trainings</h2>
@@ -289,6 +312,14 @@
     <div class="info">Das Körpergewicht braucht die App für Absprungkraft und Leistung, die Größe für den Startwert der Schrittlänge.</div>
   </section>
   <section>
+    <h2>Für den KI-Trainingsplan</h2>
+    <label class="field"><span>Position</span>
+      <select id="inPos"><option value="">keine Angabe</option><option>Außenangriff</option><option>Diagonal</option><option>Mittelblock</option><option>Zuspiel</option><option>Libero</option></select></label>
+    <label class="field"><span>Ziel</span> <textarea id="inGoal" rows="2" maxlength="300" placeholder="z. B. höher springen, mehr Ausdauer im 5. Satz"></textarea></label>
+    <label class="field"><span>Trainingstage</span> <input id="inDays" class="wide" type="text" maxlength="80" placeholder="z. B. Mo und Mi Training, Sa Spiel"></label>
+    <div class="info">Diese Angaben stehen im Text für die KI. Die App selbst schickt nichts weg.</div>
+  </section>
+  <section>
     <h2>Schritte</h2>
     <label class="field"><span>Schrittlänge</span> <input id="inStep" type="number" min="0.2" max="2" step="0.01" inputmode="decimal"> m</label>
     <div class="row" style="margin-top:6px">
@@ -316,6 +347,41 @@
   <div class="sheet" role="dialog" aria-modal="true">
     <div id="infoBody"></div>
     <button id="infoClose" style="width:100%;margin-top:6px">Schließen</button>
+  </div>
+</div>
+
+<div id="connect" class="full" hidden>
+  <div class="top">
+    <h1>Sensoren</h1>
+  </div>
+  <div id="warn" class="warn" hidden></div>
+  <div class="slots">
+    <div id="slotL" class="slot"></div>
+    <div id="slotR" class="slot"></div>
+  </div>
+  <div class="row" style="margin-bottom:10px">
+    <button id="btnConnect" style="flex:1">Sensor verbinden</button>
+    <button id="btnDemo" class="ghost">Demo</button>
+  </div>
+  <div id="autoHint" class="info autohint" hidden>Damit sich die Sensoren beim Öffnen der App von selbst verbinden, in Chrome <b>chrome://flags</b> öffnen und diese zwei Einträge auf „Enabled“ stellen: <b>Experimental Web Platform features</b> und <b>Use the new permissions backend for Web Bluetooth</b>. Danach Chrome neu starten und die Sensoren einmal per Knopf verbinden.</div>
+  <details class="fold"><summary>Details</summary>
+    <section><div id="sensorList"><div class="empty">Noch kein Sensor verbunden.</div></div></section>
+  </details>
+  <div style="flex:1"></div>
+  <div id="cAuto" class="info" style="text-align:center;margin:10px 0"></div>
+  <button id="cGo" style="width:100%">Weiter</button>
+</div>
+
+<div id="exportBg" class="sheetbg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true">
+    <h3>Daten für deine KI</h3>
+    <p class="info">Kopier den Text und füg ihn in einen Chat mit einer KI deiner Wahl ein. Den Prompt am Anfang kannst du vorher anpassen.</p>
+    <textarea id="exportText" class="export" spellcheck="false"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button id="exportCopy" style="flex:1">Kopieren</button>
+      <button id="exportShare" class="ghost" hidden>Teilen</button>
+      <button id="exportClose" class="ghost">Schließen</button>
+    </div>
   </div>
 </div>
 
@@ -433,11 +499,35 @@ function sideOf(name) {
 function newSensor(key, name, demo) {
   const s = { key, name, side: sideOf(name), status: 'neu', demo, proto: 0, stats: null,
               lastT: null, offs: [], offset: 0, retry: 0, manual: false, device: null, ctrl: null,
-              seen: new Set(), contigT: 0, needReplay: false, replaying: false, lastSyncNow: null, early: null };
+              seen: new Set(), contigT: 0, needReplay: false, replaying: false, lastSyncNow: null, early: null,
+              lastPkt: 0, syncTimes: [], rssi: null, seqSet: new Set(), seqContig: null, gapSeen: 0, recovered: 0 };
   s.onJumpV1 = e => onJumpV1(s, e.target.value);
   s.onEvent  = e => onEvent(s, e.target.value);
   s.onStats  = e => onStatsData(s, e.target.value);
   return s;
+}
+
+// Beim Start mit Sensoren verbinden, die schon einmal erlaubt wurden (ohne Antippen).
+// Braucht navigator.bluetooth.getDevices(); in Chrome je nach Version hinter zwei Schaltern unter chrome://flags.
+async function autoConnect() {
+  const hint = $('autoHint');
+  if (!navigator.bluetooth || !navigator.bluetooth.getDevices) { if (hint && navigator.bluetooth) hint.hidden = false; return; }
+  let devs = [];
+  try { devs = await navigator.bluetooth.getDevices(); } catch { return; }
+  for (const device of devs) {
+    if (!/^VB-/.test(device.name || '') || sensors.has(device.id)) continue;
+    const s = newSensor(device.id, device.name, false);
+    s.device = device;
+    device.addEventListener('gattserverdisconnected', () => onDisconnect(s));
+    sensors.set(s.key, s);
+    s.status = 'suche';
+    if (device.watchAdvertisements) {
+      // erst verbinden, wenn der Sensor in Reichweite ist und funkt
+      device.addEventListener('advertisementreceived', () => { if (s.status === 'suche') connectGatt(s); });
+      try { await device.watchAdvertisements(); } catch { connectGatt(s); }
+    } else connectGatt(s);
+  }
+  renderSensors();
 }
 
 async function connectNew() {
@@ -485,7 +575,7 @@ async function connectGatt(s) {
       onStatsData(s, await sc.readValue());
     } catch {}
     s.status = 'verbunden'; s.retry = 0; s.offs = [];
-    s.needReplay = true; s.replaying = false; s.liveMax = 0;   // Firmware v3: nach dem ersten Zeitsignal Verpasstes abholen
+    s.needReplay = true; s.replaying = false; s.liveMax = 0; s.lastPkt = Date.now(); s.syncTimes = [];   // Firmware v3: nach dem ersten Zeitsignal Verpasstes abholen
     toast(s.name + ' verbunden' + (s.proto === 1 ? ' (alte Firmware: keine Schritte)' : ''));
   } catch (e) {
     s.status = 'getrennt';
@@ -539,13 +629,20 @@ function syncClock(s, sendT) {
 function onEvent(s, dv) {
   if (dv.byteLength < 5) return;
   const type = dv.getUint8(0);
+  s.lastPkt = Date.now();
   if (type === 1 || type === 2) return onEventV2(s, dv);
-  if (type === 7) return onSync(s, dv.getUint32(1, true));
+  if (type === 7) {
+    s.syncTimes.push(Date.now()); while (s.syncTimes.length > 20) s.syncTimes.shift();
+    if (dv.byteLength >= 8) { const r = dv.getInt8(7); s.rssi = r < 0 ? r : null; }
+    return onSync(s, dv.getUint32(1, true), dv.byteLength >= 7 ? dv.getUint16(5, true) : null);
+  }
   if (!s.offs.length) { (s.early ||= []).push(dv); return; }   // erst Zeitsignal abwarten
   const evT = dv.getUint32(1, true);
   if (type === 8) return onReplayEnd(s, evT);
   const flags = dv.getUint8(dv.byteLength - 1), replay = !!(flags & 0x80);
   const key = type + ':' + evT;
+  // laufende Nummer (ab Firmware v3.1): Schritt 15 Byte, Sprung 16 Byte, Nummer vor dem Flag-Byte
+  if ((type === 5 && dv.byteLength >= 15) || (type === 6 && dv.byteLength >= 16)) noteSeq(s, dv.getUint16(dv.byteLength - 3, true));
   if (s.seen.has(key)) return;                                 // schon da (live oder früher nachgeliefert)
   s.seen.add(key);
   if (replay) { s.contigT = Math.max(s.contigT, evT); s.replayN++; }
@@ -564,10 +661,23 @@ function onEvent(s, dv) {
   }
 }
 
-function onSync(s, now) {
+function noteSeq(s, seq) {
+  if (!seq) return;
+  s.seqSet.add(seq);
+  if (s.seqContig == null) s.seqContig = seq;
+  while (s.seqSet.has(s.seqContig + 1)) s.seqContig++;
+  if (s.seqSet.size > 20000) s.seqSet = new Set([...s.seqSet].filter(x => x > s.seqContig - 100));
+}
+
+function onSync(s, now, lastSeq) {
   if (s.lastSyncNow != null && now + 2000 < s.lastSyncNow) {   // Sensoruhr ist zurückgesprungen: Sensor wurde neu gestartet
-    s.offs = []; s.contigT = 0; s.seen.clear();
+    s.offs = []; s.contigT = 0; s.seen.clear(); s.seqSet.clear(); s.seqContig = null;
   }
+  // Lücke in den laufenden Nummern, obwohl die Verbindung steht (einzelne Meldung bei schwachem Signal verloren)?
+  // Erst nachfordern, wenn sie bei zwei Zeitsignalen hintereinander noch offen ist.
+  if (lastSeq && s.seqContig != null && lastSeq > s.seqContig && !s.replaying && !s.needReplay && session && s.ctrl) {
+    if (++s.gapSeen >= 2) { s.gapSeen = 0; requestSeqReplay(s, s.seqContig + 1); }
+  } else s.gapSeen = 0;
   s.lastSyncNow = now; s.proto = 3;
   syncClock(s, now);
   if (s.early) { const e = s.early; s.early = null; e.forEach(d => onEvent(s, d)); }
@@ -581,9 +691,17 @@ function onSync(s, now) {
   }
 }
 
+async function requestSeqReplay(s, fromSeq) {
+  s.replaying = true; s.replayN = 0; s.replayFromAt = Date.now() - 120000; s.replayStart = Date.now();
+  const b = new Uint8Array(3); b[0] = 4;
+  new DataView(b.buffer).setUint16(1, fromSeq, true);
+  try { await s.ctrl.writeValue(b); } catch { s.replaying = false; }
+  renderSensors();
+}
+
 async function requestReplay(s, fromT) {
   if (!s.ctrl) return;
-  s.replaying = true; s.replayN = 0; s.replayFromAt = fromT + s.offset;
+  s.replaying = true; s.replayN = 0; s.replayFromAt = fromT + s.offset; s.replayStart = Date.now();
   const b = new Uint8Array(5); b[0] = 2;
   new DataView(b.buffer).setUint32(1, fromT, true);
   try { await s.ctrl.writeValue(b); } catch { s.replaying = false; s.needReplay = true; }
@@ -593,11 +711,13 @@ async function requestReplay(s, fromT) {
 function onReplayEnd(s, endT) {
   s.replaying = false;
   s.contigT = Math.max(s.contigT, endT, s.liveMax || 0);
+  if (s.replayN) s.recovered = (s.recovered || 0) + s.replayN;
   if (session && s.replayN) {
     // Sprünge im nachgeladenen Zeitraum neu auswerten: ihre Anlaufschritte können erst jetzt vollständig sein
     for (const j of session.jumps) if (j.at >= s.replayFromAt - 3000) {
       j.app = (j.v2 || session.v2) ? analyzeApproach(session.steps, j.to) : null;
       if (!j.label) j.pred = classify(j);
+      checkSingle(j);
     }
     markDirty(true);
     toast(`${s.name}: ${s.replayN} verpasste Ereignisse nachgeladen`);
@@ -694,16 +814,46 @@ function commitSingle(ev) {
           && j.feet !== ev.side && Math.abs(j.at - ev.at) <= PAIR_MS) { mergeInto(j, ev); return; }
     }
   }
-  commitJump({ at: ev.at, feet: ev.side, h: ev.h, flight: ev.flight, peak: ev.peak,
+  const j = commitJump({ at: ev.at, feet: ev.side, h: ev.h, flight: ev.flight, peak: ev.peak,
                hL: ev.side === 'L' ? ev.h : null, hR: ev.side === 'R' ? ev.h : null,
                peakL: ev.side === 'L' ? ev.peak : null, peakR: ev.side === 'R' ? ev.peak : null,
                contact: ev.contact, clipped: ev.clipped, v2: ev.v2, sensors: [ev.sensor] });
+  // Die Landung des anderen Fußes kann noch unterwegs sein: kurz warten, dann prüfen.
+  if (!anyReplaying()) setTimeout(() => { if (checkSingle(j)) { markDirty(true); renderAll(); } }, 900);
+}
+
+// ---------- Einbeiniger Sprung oder nur ein Bein angehoben? ----------
+// Bei einem echten Sprung ist der ganze Körper in der Luft: Der andere Fuß berührt während der
+// Flugphase den Boden nicht und kommt um die Landung herum ebenfalls auf. Hebt man nur ein Bein,
+// steht der andere Fuß die ganze Zeit (keine Landung) oder macht währenddessen einen Schritt.
+// Geprüft wird nur, wenn der andere Schuh im Training überhaupt Daten liefert.
+const OTHER_CODE = { L: 1, R: 0 };
+function checkSingle(j) {
+  if (!session || !j || !session.jumps.includes(j)) return false;
+  if (j.feet !== 'L' && j.feet !== 'R') return false;
+  if (j.manual) return false;                         // von Hand markiert: nichts überschreiben
+  const oc = OTHER_CODE[j.feet], otherFeet = j.feet === 'L' ? 'R' : 'L';
+  const S = session.steps;
+  const active = S.some(s => s[S_SIDE] === oc && Math.abs(s[S_T] - j.at) < 30000)
+              || session.jumps.some(o => o !== j && (o.feet === 'B' || o.feet === otherFeet) && Math.abs(o.at - j.at) < 30000);
+  let bad = false;
+  if (active) {
+    const to = j.at - j.flight;
+    const during = S.some(s => s[S_SIDE] === oc && s[S_T] > to + 50 && s[S_T] < j.at - 50);
+    const landed = S.some(s => s[S_SIDE] === oc && s[S_T] >= j.at - 200 && s[S_T] <= j.at + 250);
+    bad = during || !landed;
+  }
+  const before = !!j.autoFake;
+  if (bad) { j.fake = true; j.autoFake = true; }
+  else if (j.autoFake) { j.fake = false; j.autoFake = false; }
+  return before !== !!j.autoFake;
 }
 
 function mergeInto(j, ev) {
   const a = { sensor: j.sensors[0], side: j.feet, at: j.at, flight: j.flight, h: j.hRaw ?? j.h,
               peak: j.peak, contact: j.contact, clipped: j.clipped, v2: j.v2 };
   Object.assign(j, buildPair(a, ev), { hRaw: null, hLRaw: null, hRRaw: null });
+  if (j.autoFake) { j.fake = false; j.autoFake = false; }   // beide Füße waren in der Luft
   correctHeight(j);
   j.to = j.at - j.flight;
   j.app = (j.v2 || session.v2) ? analyzeApproach(session.steps, j.to) : null;
@@ -750,9 +900,10 @@ function commitJump(j) {
   j.pred = classify(j);
   insertSorted(session.jumps, j, x => x.at);
   markDirty(true);
-  if (anyReplaying()) return;                // beim Nachladen erst am Ende neu zeichnen
+  if (anyReplaying()) return j;              // beim Nachladen erst am Ende neu zeichnen
   if (!viewed) renderAll(true);
   if (learnOpen) { renderLearn(); try { navigator.vibrate && navigator.vibrate(60); } catch {} }
+  return j;
 }
 
 // ---------- Anlauf: Schritte vor dem Absprung rückwärts verfolgen ----------
@@ -873,6 +1024,7 @@ function setLabel(ses, idx, label) {
   if (!j) return;
   j.fake = label === FAKE;
   j.label = (label && label !== FAKE) ? label : null;
+  j.manual = true; j.autoFake = false;
   trainCache = null;
   for (const o of ses.jumps) if (!o.label) o.pred = classify(o);   // neu Gelerntes sofort anwenden
   if (ses === session) markDirty(true); else dbPutSession(ses);
@@ -1046,18 +1198,150 @@ document.addEventListener('visibilitychange', () => {
 // ======================================================================
 // Anzeige
 // ======================================================================
+// Verbindung: "Daten kommen" heißt, es kam in den letzten Sekunden wirklich etwas an.
+// Ab Firmware v3 schickt der Sensor jede Sekunde ein Zeitsignal, ab v3.3 mit Signalstärke.
+function linkState(s) {
+  if (s.status !== 'verbunden') return { cls: s.status === 'getrennt' ? 'off' : 'wait', text: s.status, q: 0 };
+  const age = s.lastPkt ? (Date.now() - s.lastPkt) / 1000 : Infinity;
+  const recent = s.syncTimes.filter(t => Date.now() - t < 10000).length;   // erwartet: 10 in 10 s
+  let q;
+  if (s.rssi != null) q = s.rssi >= -65 ? 4 : s.rssi >= -75 ? 3 : s.rssi >= -85 ? 2 : 1;
+  else q = s.proto >= 3 ? Math.max(1, Math.round(recent / 10 * 4)) : 0;
+  if (s.proto >= 3 && age > 3) return { cls: 'wait', text: `verbunden, aber seit ${Math.round(age)} s keine Daten`, q: 0 };
+  if (s.proto >= 3 && recent < 7) q = Math.min(q, 1);
+  return { cls: 'on', text: s.proto >= 3 ? 'Daten kommen' : 'verbunden', q, age };
+}
+function barsHtml(q) { return `<span class="bars q${q}"><i></i><i></i><i></i><i></i></span>`; }
+
+// Verbunden, aber stumm: Verbindung neu aufbauen
+function watchdog() {
+  for (const s of sensors.values()) {
+    if (s.replaying && s.replayStart && Date.now() - s.replayStart > 20000) s.replaying = false;   // Ende nie angekommen
+    if (s.demo || s.status !== 'verbunden' || s.proto < 3 || !s.lastPkt) continue;
+    if (Date.now() - s.lastPkt > 8000 && s.device && s.device.gatt.connected) {
+      toast(s.name + ': keine Daten, verbinde neu …');
+      s.lastPkt = Date.now();
+      try { s.device.gatt.disconnect(); } catch {}
+    }
+  }
+}
+
+// ---------- Verbinden-Bildschirm und Kurzanzeige ----------
+let connectOpen = false, connectAuto = false, connectDoneTimer = null;
+function sensorFor(side) { return [...sensors.values()].find(s => s.side === side && s.status !== 'neu') || null; }
+function sideState(side) { const s = sensorFor(side); return s ? linkState(s) : { cls: 'none', text: 'nicht verbunden', q: 0 }; }
+
+function openConnect(auto = false) {
+  connectOpen = true; connectAuto = auto; $('connect').hidden = false; document.body.style.overflow = 'hidden';
+  renderConnect();
+}
+function closeConnect() {
+  connectOpen = false; clearTimeout(connectDoneTimer); connectDoneTimer = null;
+  $('connect').hidden = true; document.body.style.overflow = ''; renderAll();
+}
+
+function renderConnect() {
+  if (!connectOpen) return;
+  for (const side of ['L', 'R']) {
+    const st = sideState(side), el = $('slot' + side);
+    el.className = 'slot' + (st.cls === 'on' ? ' on' : '');
+    el.innerHTML = `<div class="big">${side}</div><div class="info">${side === 'L' ? 'Linker Schuh' : 'Rechter Schuh'}</div>
+      <div class="st"><span class="dot ${st.cls === 'none' ? '' : st.cls}"></span>${st.cls === 'on' && st.q ? barsHtml(st.q) : ''}${esc(st.text)}</div>`;
+  }
+  const both = sideState('L').cls === 'on' && sideState('R').cls === 'on';
+  $('cGo').textContent = both || sensors.size ? 'Weiter' : 'Ohne Sensoren weiter';
+  if (both && connectAuto && !connectDoneTimer) {
+    $('cAuto').textContent = 'Beide Sensoren liefern Daten.';
+    connectDoneTimer = setTimeout(() => { if (connectOpen) closeConnect(); }, 1500);
+  } else if (!both) $('cAuto').textContent = sensors.size ? '' : 'Schuhe anziehen, Sensoren kurz bewegen, dann verbinden.';
+}
+
+function renderSensorBar() {
+  for (const side of ['L', 'R']) {
+    const st = sideState(side);
+    $('pill' + side).innerHTML = `<span class="dot ${st.cls === 'none' ? '' : st.cls}"></span>${side}${st.cls === 'on' && st.q ? ' ' + barsHtml(st.q) : ''}`;
+    $('pill' + side).title = (side === 'L' ? 'Linker Schuh: ' : 'Rechter Schuh: ') + st.text;
+  }
+}
+
+// ---------- Daten für die eigene KI ----------
+function buildExport() {
+  const DAY = 86400000, since = Date.now() - 28 * DAY;
+  const all = [...saved]; if (session && !saved.includes(session)) all.push(session);
+  const list = all.filter(x => x.start >= since && jumpsOf(x).length).sort((a, b) => a.start - b.start);
+  const p = profile || {};
+  const L = [];
+  L.push('Du bist Athletiktrainer für Volleyball. Unten stehen meine Trainingsdaten der letzten 4 Wochen. Gemessen wurden sie mit Sensoren an beiden Schuhen (FaltumTracker).');
+  L.push('Erstelle mir daraus einen Trainingsplan für die nächsten 2 Wochen, zusätzlich zum Volleyballtraining.');
+  L.push('Achte dabei auf Folgendes:');
+  L.push('- Die Sprungbelastung pro Woche nicht sprunghaft erhöhen und Ruhetage einplanen, besonders vor Spielen.');
+  L.push('- Begründe jede Empfehlung kurz mit den Werten unten.');
+  L.push('- Wenn dir Angaben fehlen (Alter, Verletzungen, Ausstattung), frag erst nach.');
+  L.push('- Weise darauf hin, den Plan mit meinem Trainer abzusprechen.');
+  L.push('');
+  L.push('ÜBER MICH');
+  L.push(`Körpergewicht ${nf(p.mass, 0)} kg` + (p.height ? `, Größe ${p.height} cm` : '') + (p.pos ? `, Position: ${p.pos}` : ''));
+  if (p.goal) L.push('Ziel: ' + p.goal);
+  if (p.days) L.push('Trainings und Spiele: ' + p.days);
+  L.push('');
+  L.push('SO SIND DIE WERTE ZU LESEN');
+  L.push('- Sprunghöhe: aus der Flugzeit berechnet und für die Landehaltung korrigiert. Für Vergleiche untereinander gut, absolut noch nicht gegen eine Referenzmessung geprüft.');
+  L.push('- Landung in g: Aufprall am Schuh, deutlich höher als am Körper, nur untereinander vergleichbar. Landebelastung = Summe aller Landespitzen.');
+  L.push('- RSI = Sprunghöhe in m geteilt durch die Kontaktzeit des letzten Fußes in s. Höher = explosiver.');
+  L.push('- Ermüdung = Höhe der letzten 10 Sprünge gegenüber den ersten 10.');
+  L.push('- Sprungart (Angriff, Block, Aufschlag) erkennt die App aus dem Anlauf und kann sich irren.');
+  L.push('');
+  if (!list.length) { L.push('TRAININGS: In den letzten 4 Wochen wurden keine Trainings aufgezeichnet.'); return L.join('\n'); }
+  L.push('TRAININGS');
+  const weeks = {};
+  for (const ses of list) {
+    const r = analyze(ses), J = jumpsOf(ses), d = new Date(ses.start);
+    const types = {};
+    for (const j of J) { const t = typeOf(j); (types[t] ||= []).push(j.h); }
+    const tt = Object.entries(types).map(([t, hs]) => `${t === '?' ? 'unbekannt' : t} ${hs.length} (Ø ${nf(mean(hs))} cm)`).join(', ');
+    L.push(`${d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })}, ${fmtDur((ses.end || Date.now()) - ses.start)}: ` +
+      `${r.n} Sprünge` + (r.jpm ? `, ${nf(r.jpm)}/min` : '') + `, bester ${nf(r.best)} cm, Ø ${nf(r.avg)} cm` +
+      (r.fatigue != null ? `, Ermüdung ${nf(r.fatigue, 0)} %` : '') +
+      (r.rsi ? `, RSI Ø ${nf(r.rsi, 2)}` : '') + (r.contact ? `, Kontakt Ø ${nf(r.contact, 0)} ms` : '') +
+      `, Landung Ø ${nf(r.peakAvg)} g, Belastung ${nf(r.load, 0)}` +
+      (ses.v2 ? `, ca. ${nf(r.dist / 1000, 1)} km` : '') + (tt ? ` | ${tt}` : ''));
+    const wk = Math.floor((Date.now() - ses.start) / (7 * DAY));
+    const w = weeks[wk] ||= { n: 0, load: 0, hs: [], count: 0 };
+    w.n += r.n; w.load += r.load; w.hs.push(...J.map(j => j.h)); w.count++;
+  }
+  L.push('');
+  L.push('PRO WOCHE (älteste zuerst)');
+  for (const k of Object.keys(weeks).map(Number).sort((a, b) => b - a)) {
+    const w = weeks[k];
+    L.push(`${k === 0 ? 'Diese Woche' : `Vor ${k} ${k === 1 ? 'Woche' : 'Wochen'}`}: ${w.count} ${w.count === 1 ? 'Training' : 'Trainings'}, ${w.n} Sprünge, Ø ${nf(mean(w.hs))} cm, bester ${nf(Math.max(...w.hs))} cm, Belastung ${nf(w.load, 0)}`);
+  }
+  return L.join('\n');
+}
+
+function openExport() {
+  $('exportText').value = buildExport();
+  $('exportShare').hidden = !navigator.share;
+  $('exportBg').hidden = false; document.body.style.overflow = 'hidden';
+}
+function closeExport() { $('exportBg').hidden = true; document.body.style.overflow = ''; }
+async function copyExport() {
+  const t = $('exportText').value;
+  try { await navigator.clipboard.writeText(t); toast('Kopiert. Jetzt in deine KI einfügen.'); }
+  catch { $('exportText').select(); document.execCommand && document.execCommand('copy'); toast('Text markiert. Falls nötig, lange drücken und kopieren.'); }
+}
+
 function renderSensors() {
-  renderLearn();
+  renderLearn(); renderConnect(); renderSensorBar();
   const list = $('sensorList');
   if (!sensors.size) { list.innerHTML = '<div class="empty">Noch kein Sensor verbunden.</div>'; return; }
   list.innerHTML = '';
   for (const s of sensors.values()) {
     const row = document.createElement('div'); row.className = 'sensor';
-    const cls = s.status === 'verbunden' ? 'on' : (s.status === 'getrennt' ? 'off' : 'wait');
-    const info = [s.status, s.proto ? 'Firmware v' + s.proto : '', s.replaying ? 'lädt Verpasstes nach …' : '',
-                  s.stats ? `zählt ${s.stats.count} Sprünge` : ''].filter(Boolean).join(' · ');
+    const L = linkState(s), cls = L.cls;
+    const info = [L.text, s.rssi != null && L.cls === 'on' ? s.rssi + ' dBm' : '', s.replaying ? 'lädt Verpasstes nach …' : '',
+                  s.recovered ? `${s.recovered} nachgeholt` : '', s.proto ? 'Firmware v' + s.proto : ''].filter(Boolean).join(' · ');
     row.innerHTML = `<span class="dot ${cls}"></span>
-      <div class="grow"><div class="name">${esc(s.name)}${s.demo ? ' (Demo)' : ''}</div><div class="info">${esc(info)}</div></div>
+      <div class="grow"><div class="name">${L.cls === 'on' && L.q ? barsHtml(L.q) : ''}${esc(s.name)}${s.demo ? ' (Demo)' : ''}</div><div class="info">${esc(info)}</div></div>
       ${s.ctrl ? '<button class="ghost small" data-a="reset">Zähler 0</button>' : ''}
       <button class="ghost small" data-a="off">Trennen</button>`;
     row.querySelector('[data-a=off]').onclick = () => disconnectSensor(s);
@@ -1275,7 +1559,7 @@ function renderJumpRows(ses) {
     const j = J[i], tr = document.createElement('tr');
     const feet = j.feet === 'B' && j.hL != null ? `beide (${nf(j.hL)}/${nf(j.hR)})` : FEET_TXT[j.feet];
     const opts = ['', ...TYPES].map(t => `<option value="${t}" ${!j.fake && j.label === t ? 'selected' : ''}>${t || (j.pred ? j.pred + '?' : '–')}</option>`).join('')
-      + `<option value="${FAKE}" ${j.fake ? 'selected' : ''}>kein Sprung</option>`;
+      + `<option value="${FAKE}" ${j.fake ? 'selected' : ''}>${j.autoFake ? 'kein Sprung (Bein angehoben)' : 'kein Sprung'}</option>`;
     const sel = `<select>${opts}</select>`;
     if (j.fake) tr.style.opacity = '.45';
     tr.innerHTML = `<td class="l">${fmtTime(j.at)}</td><td class="l">${sel}</td><td class="l">${feet}</td>
@@ -1411,6 +1695,7 @@ function learnUndoLast() {
   if (idx < 0) return;
   j.skip = false; delete j.hit;
   setLabel(session, idx, null);
+  j.manual = false; checkSingle(j);
   renderLearn();
 }
 
@@ -1418,7 +1703,7 @@ function renderLearn() {
   if (!learnOpen) return;
   // Sensoren
   const dots = [...sensors.values()].map(s => {
-    const c = s.status === 'verbunden' ? 'var(--ok)' : s.status === 'getrennt' ? 'var(--bad)' : 'var(--acc)';
+    const L = linkState(s), c = L.cls === 'on' ? 'var(--ok)' : L.cls === 'off' ? 'var(--bad)' : '#ffb020';
     return `<span><span class="dot" style="display:inline-block;background:${c};vertical-align:-1px"></span> ${esc(s.side)}</span>`;
   }).join('');
   $('lDots').innerHTML = dots || 'kein Sensor';
@@ -1524,7 +1809,8 @@ function makeDemoSensor(side, t0) {
     }
     setTimeout(() => deliver([8, ...u32b(endT), ...u16b(n)]), n * 4 + 5);
   } };
-  s.syncTimer = setInterval(() => { if (!sensors.has(s.key)) clearInterval(s.syncTimer); else deliver([7, ...u32b(s.fwNow())]); }, 1000);
+  const rssi = () => (-58 - Math.round(Math.random() * 20)) & 255;
+  s.syncTimer = setInterval(() => { if (!sensors.has(s.key)) clearInterval(s.syncTimer); else deliver([7, ...u32b(s.fwNow()), 0, 0, rssi()]); }, 1000);
   setTimeout(() => deliver([7, ...u32b(s.fwNow())]), 50);
   return s;
 }
@@ -1601,10 +1887,14 @@ function fillSettings() {
   $('inMass').value = settings.mass; $('inStep').value = settings.stepLen; $('inDrop').value = settings.landDrop ?? 5;
   $('inName').value = profile ? profile.name : '';
   $('inHeight').value = profile && profile.height ? profile.height : '';
+  $('inPos').value = profile && profile.pos || ''; $('inGoal').value = profile && profile.goal || ''; $('inDays').value = profile && profile.days || '';
 }
 
 function initSettings() {
   fillSettings();
+  $('inPos').onchange = e => { if (profile) { profile.pos = e.target.value; saveProfiles(); } };
+  $('inGoal').onchange = e => { if (profile) { profile.goal = e.target.value.trim(); saveProfiles(); } };
+  $('inDays').onchange = e => { if (profile) { profile.days = e.target.value.trim(); saveProfiles(); } };
   $('inName').onchange = e => { const v = e.target.value.trim(); if (profile && v) { profile.name = v; saveProfiles(); renderProfileChip(); } else fillSettings(); };
   $('inMass').onchange = e => { const v = parseFloat(e.target.value); if (v >= 30 && v <= 200) { settings.mass = v; saveProfiles(); renderAll(); } else fillSettings(); };
   $('inHeight').onchange = e => {
@@ -1715,6 +2005,7 @@ async function createProfile() {
   $('pNewName').value = ''; $('pNewMass').value = ''; $('pNewHeight').value = '';
   await activateProfile(p.id);
   closeProfiles();
+  if (first) openConnect(true);
 }
 
 async function deleteProfile(p) {
@@ -1814,6 +2105,14 @@ async function init() {
   $('lStop').onclick = () => { if (confirm('Training beenden und speichern?')) stopSession(); };
   $('lSkip').onclick = () => { const q = learnQueue(); if (q.length) learnSkip(q[0]); };
   $('lUndo').onclick = learnUndoLast;
+  $('cGo').onclick = closeConnect;
+  $('btnSensors').onclick = () => openConnect(false);
+  $('pillL').onclick = $('pillR').onclick = () => openConnect(false);
+  $('btnExport').onclick = openExport;
+  $('exportClose').onclick = closeExport;
+  $('exportCopy').onclick = copyExport;
+  $('exportShare').onclick = () => navigator.share({ text: $('exportText').value }).catch(() => {});
+  $('exportBg').addEventListener('click', e => { if (e.target === $('exportBg')) closeExport(); });
   $('stats').addEventListener('click', e => { const b = e.target.closest('.ib'); if (b) openInfo(b.dataset.k); });
   $('infoClose').onclick = closeInfo;
   $('infoBg').addEventListener('click', e => { if (e.target === $('infoBg')) closeInfo(); });
@@ -1829,6 +2128,7 @@ async function init() {
   window.addEventListener('resize', () => renderCharts(view()));
   setInterval(() => {
     $('sessTime').textContent = session ? fmtDur(Date.now() - session.start) : '00:00';
+    watchdog(); renderSensors();
     if (learnOpen && session) $('lTime').textContent = fmtDur(Date.now() - session.start);
     if (dirty) saveCurrent();
     if (session && !viewed && session.steps.length !== renderAll.lastSteps) {   // neue Schritte -> Kacheln auffrischen
@@ -1850,8 +2150,9 @@ async function init() {
     toast('Speicher nicht verfügbar: ' + e.message, 6000);
   }
   renderThemes();
+  autoConnect();
   const last = loadLS('vb_activeProfile', null);
-  if (profiles.length) await activateProfile(profiles.some(p => p.id === last) ? last : profiles[0].id);
+  if (profiles.length) { await activateProfile(profiles.some(p => p.id === last) ? last : profiles[0].id); openConnect(true); }
   else { applyTheme('onyx'); openProfiles(true); }
   renderSensors(); renderAll();
 }
