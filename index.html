@@ -3,250 +3,536 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0b">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>FaltumTracker</title>
 <style>
+  /* Aufbau nach Apples Human Interface Guidelines: Systemschrift, gruppierte Listen,
+     Tab-Leiste unten, große Titel, Sheets von unten, Mindestgröße 44 px für alles Antippbare. */
   :root {
-    --bg: #0a0a0b; --card: #121214; --card2: #0a0a0b; --line: #242427; --text: #f3f3f0; --dim: #8e8e8a;
-    --acc: #ffffff; --acc-ink: #0a0a0b; --acc2: #ffffff; --ok: #3ecf8e; --bad: #ff5d5d;
-    --warnbg: #2a1212; --warnfg: #ffc9c9; --bannerbg: #18181b;
-    --font: "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system, sans-serif;
+    --bg: #000000; --card: #1c1c1e; --card2: #2c2c2e; --line: #38383a; --text: #ffffff; --dim: #8e8e93;
+    --acc: #ffffff; --acc-ink: #000000; --acc2: #ffffff; --ok: #30d158; --bad: #ff453a; --orange: #ff9f0a;
+    --warnbg: rgba(255,69,58,.14); --warnfg: #ff8a80; --bar: rgba(22,22,24,.82);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   :root.light {
-    --bg: #f2f1ed; --card: #ffffff; --card2: #f2f1ed; --line: #e0ded7; --text: #121212; --dim: #6d6d68;
-    --warnbg: #fde8e8; --warnfg: #8a1f1f; --bannerbg: #ecebe6;
+    --bg: #f2f2f7; --card: #ffffff; --card2: #f2f2f7; --line: #d1d1d6; --text: #000000; --dim: #6c6c70;
+    --ok: #34c759; --bad: #ff3b30; --orange: #ff9500; --warnbg: rgba(255,59,48,.10); --warnfg: #c4261d; --bar: rgba(249,249,249,.88);
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   [hidden] { display: none !important; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
-  body { padding: 0 14px 48px; max-width: 900px; margin: 0 auto; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0 16px; position: sticky; top: 0; z-index: 4;
-    background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(12px); }
-  header .brand { display: flex; align-items: center; gap: 10px; }
-  header .brand svg { height: 20px; width: auto; fill: var(--text); }
-  header .ver { color: var(--dim); font-size: 11px; font-weight: 700; letter-spacing: .1em; }
-  .chip { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 14px 4px 4px; border-radius: 999px;
-    background: transparent; color: var(--text); border: 1px solid var(--line); font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none; }
-  .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--acc); color: var(--acc-ink);
-    font-weight: 800; font-size: 14px; flex: none; }
-  h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; line-height: .95; text-transform: uppercase; margin: 0; }
-  h2 { font-size: 12px; color: var(--dim); font-weight: 800; margin: 22px 0 10px; text-transform: uppercase; letter-spacing: .14em; }
-  section > h2:first-child { margin-top: 0; }
-  section { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 18px; margin-bottom: 14px; }
-  button { font: inherit; font-weight: 800; font-size: 13px; letter-spacing: .07em; text-transform: uppercase; border: 0; border-radius: 999px;
-    padding: 12px 20px; background: var(--acc); color: var(--acc-ink); min-height: 48px; cursor: pointer; transition: transform .12s, background .3s, color .3s; }
-  button:active { transform: scale(.98); }
-  button.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--line); }
-  button.small { min-height: 38px; padding: 8px 14px; font-size: 11px; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.35 var(--font); -webkit-font-smoothing: antialiased; }
+  body { max-width: 700px; margin: 0 auto; }
+  .page { padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
+
+  /* Navigationsleiste und großer Titel */
+  .nav { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 8px; min-height: 52px;
+    padding: calc(4px + env(safe-area-inset-top)) 0 4px; background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+    margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .nav .grow { flex: 1; }
+  h1.large { font-size: 34px; font-weight: 700; letter-spacing: .01em; line-height: 1.2; margin: 2px 0 12px; }
+  .subtitle { color: var(--dim); font-size: 15px; margin: -8px 0 14px; }
+  .navback, .navbtn { background: none; color: var(--acc); font-size: 17px; font-weight: 400; padding: 0 4px; min-height: 44px; border: 0;
+    display: inline-flex; align-items: center; gap: 2px; box-shadow: none; }
+  .navbtn.destr { color: var(--bad); font-weight: 600; }
+  .navback svg { width: 12px; height: 20px; }
+  .battw { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .spill { white-space: nowrap; }
+  .nav .spill { padding: 0 8px; gap: 4px; }
+  .nav .spill .bars { margin-right: 0; }
+  @media (max-width: 400px) { .nav .spill .bars { display: none; } }
+  .battw.stale { opacity: .45; }
+  .battw.low { color: var(--orange); } .battw.crit { color: var(--bad); }
+  .batt { width: 22px; height: 11px; flex: none; }
+  .battnote { display: flex; align-items: center; gap: 6px; color: var(--orange); font-size: 15px; margin: -4px 0 14px; }
+  .slot .sbatt { margin-top: 4px; font-size: 13px; color: var(--dim); min-height: 18px; }
+  .slot .sbatt .battw { margin-left: 2px; }
+  .spill { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 0 10px; border-radius: 16px; border: 0;
+    background: var(--card); color: var(--text); font: 600 13px var(--font); box-shadow: none; }
+
+  /* Überschriften über Gruppen (wie in Einstellungen auf dem iPhone) */
+  h2 { font-size: 13px; font-weight: 400; color: var(--dim); text-transform: uppercase; letter-spacing: .02em; margin: 24px 16px 7px; }
+  .foot { color: var(--dim); font-size: 13px; margin: 7px 16px 0; line-height: 1.35; }
+
+  /* gruppierte Liste */
+  .group { background: var(--card); border-radius: 12px; overflow: hidden; }
+  .group.pad { padding: 14px 16px; }
+  .group + .group { margin-top: 20px; }
+  .cell { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 11px 16px; background: var(--card); color: var(--text);
+    border: 0; border-radius: 0; font: 17px var(--font); text-align: left; box-shadow: none; position: relative; }
+  .cell + .cell::before, .swrow + .swrow::before, label.field + label.field::before, .cell + label.field::before, label.field + .cell::before {
+    content: ""; position: absolute; top: 0; left: 16px; right: 0; height: .5px; background: var(--line); z-index: 1; }
+  .cell.tint { color: var(--acc); }
+  .cell.destr { color: var(--bad); }
+  .cell .grow { flex: 1; min-width: 0; }
+  .cell .chev { width: 8px; height: 14px; flex: none; stroke: var(--dim); }
+  .cell .val2 { color: var(--dim); }
+  .cell:active { background: var(--card2); }
+
+  /* Knöpfe */
+  button { font: 600 17px var(--font); border: 0; border-radius: 12px; padding: 0 20px; min-height: 50px; background: var(--acc); color: var(--acc-ink);
+    cursor: pointer; letter-spacing: -.01em; }
+  button:active { opacity: .7; }
+  button:disabled { opacity: .3; }
+  button.ghost, button.tinted { background: var(--card2); color: var(--acc); }
+  :root.light button.ghost, :root.light button.tinted { background: rgba(120,120,128,.12); }
+  button.small { min-height: 36px; padding: 0 14px; font-size: 15px; border-radius: 9px; }
   button.stop { background: var(--bad); color: #fff; }
-  button:disabled { opacity: .35; }
+  button.wide, .wide-btn { width: 100%; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .warn { background: var(--warnbg); border: 1px solid var(--bad); color: var(--warnfg); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; font-size: 15px; }
-  .banner { background: var(--bannerbg); border: 1px solid var(--line); border-radius: 14px; padding: 8px 8px 8px 14px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; font-size: 14px; }
-  .banner span { flex: 1; }
-  .sensor { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
-  .sensor:first-of-type { border-top: 0; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dim); flex: none; }
-  .dot.on { background: var(--ok); } .dot.wait { background: #ffb020; } .dot.off { background: var(--bad); }
-  .sensor .name, .hist .name { font-weight: 700; }
-  .info { color: var(--dim); font-size: 14px; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+
+  .warn { background: var(--warnbg); color: var(--warnfg); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-size: 15px; }
+  .info { color: var(--dim); font-size: 15px; }
+  .empty { color: var(--dim); font-size: 15px; padding: 14px 16px; }
   .grow { flex: 1; }
-  .last { text-align: center; padding: 18px 0 10px; }
-  .last .num { font-size: 104px; font-weight: 800; line-height: .9; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
-  .last .unit { font-size: 26px; font-weight: 800; color: var(--dim); letter-spacing: -.02em; }
-  .last .sub { color: var(--dim); margin-top: 12px; font-size: 14px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dim); flex: none; display: inline-block; }
+  .dot.on { background: var(--ok); } .dot.wait { background: var(--orange); } .dot.off { background: var(--bad); }
+
+  /* Training */
+  .hero { padding: 22px 16px 16px; text-align: center; }
+  .hero p { margin: 0 0 18px; }
+  .runbar { display: flex; align-items: flex-end; gap: 24px; margin: 0 4px 14px; }
+  .runbar .cap { color: var(--dim); font-size: 13px; }
+  .runbar span { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .runbar button { margin-left: auto; }
+  .last { text-align: center; padding: 18px 12px 12px; }
+  .last .num { font-size: 96px; font-weight: 700; line-height: .95; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .last .unit { font-size: 28px; font-weight: 600; color: var(--dim); }
+  .last .sub { color: var(--dim); margin-top: 10px; font-size: 15px; }
   .flash { animation: flash .7s ease-out; }
-  @keyframes flash { from { color: var(--acc); transform: scale(1.06); } to { color: var(--text); transform: none; } }
-  :root.light .flash { animation-name: flashL; }
-  @keyframes flashL { from { color: var(--acc2); transform: scale(1.06); } to { color: var(--text); transform: none; } }
-  .typebtns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 6px 0 8px; }
-  .typebtns button { min-height: 40px; padding: 6px 14px; font-size: 12px; background: transparent; color: var(--text); box-shadow: none; border: 2px solid var(--line); }
+  @keyframes flash { from { color: var(--acc2); transform: scale(1.05); } to { color: var(--text); transform: none; } }
+  .typebtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 4px 0 6px; }
+  .typebtns button { min-height: 36px; padding: 0 14px; font-size: 15px; border-radius: 18px; background: transparent; color: var(--text); border: 1.5px solid var(--line); }
   .typebtns button.pred { border-style: dashed; }
-  .typebtns button.sel { color: #111; }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
-  .tile { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
-  .tile .lbl { color: var(--dim); font-size: 12px; font-weight: 700; }
-  .tile .val { font-size: 26px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin-top: 2px; }
-  .tile .hint { color: var(--dim); font-size: 12px; }
-  canvas { width: 100%; height: 170px; display: block; background: var(--card2); border: 1px solid var(--line); border-radius: 16px; }
-  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--dim); margin: 8px 2px 0; }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-  th, td { text-align: right; padding: 8px 4px; border-top: 1px solid var(--line); white-space: nowrap; }
-  th { color: var(--dim); font-weight: 700; font-size: 12px; border-top: 0; }
+  .typebtns button.sel { color: #000; border-color: transparent; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .tile { background: var(--card); border-radius: 12px; padding: 12px 14px; position: relative; }
+  .tile .lbl { color: var(--dim); font-size: 13px; font-weight: 500; padding-right: 30px; }
+  .tile .val { font-size: 28px; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .tile .hint { color: var(--dim); font-size: 13px; }
+  .ib { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; min-height: 0; padding: 0; border-radius: 22px; background: none;
+    color: var(--acc); display: grid; place-items: center; }
+  .ib::before { content: "i"; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; font: italic 700 13px/19px Georgia, serif; text-align: center; }
+  .ib { font-size: 0; }
+  #stats > h2:first-child { margin-top: 24px; }
+  details.more { margin-top: 12px; }
+  details.more > summary, details.fold > summary { list-style: none; cursor: pointer; display: flex; align-items: center; min-height: 44px;
+    padding: 0 16px; background: var(--card); border-radius: 12px; color: var(--acc); font-size: 17px; }
+  details > summary::-webkit-details-marker { display: none; }
+  details.more > summary::after, details.fold > summary::after { content: ""; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim);
+    transform: rotate(-45deg); transition: transform .2s; }
+  details[open] > summary::after { transform: rotate(45deg); }
+  details.fold { margin-top: 20px; }
+  details[open] > summary { margin-bottom: 10px; }
+
+  canvas { width: 100%; height: 170px; display: block; }
+  .chartbox { background: var(--card); border-radius: 12px; padding: 10px 8px 10px; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--dim); margin: 8px 6px 0; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 9px 8px; border-top: .5px solid var(--line); white-space: nowrap; }
+  th { color: var(--dim); font-weight: 500; font-size: 13px; border-top: 0; }
   th.l, td.l { text-align: left; }
-  td select { font: inherit; background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
-  .tablewrap { max-height: 340px; overflow: auto; }
-  .note { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 14px; font-size: 15px; }
+  td select { font: inherit; background: var(--card2); color: var(--text); border: 0; border-radius: 8px; padding: 4px 6px; }
+  .tablewrap { max-height: 360px; overflow: auto; background: var(--card); border-radius: 12px; padding: 0 6px; }
+  .note { background: var(--card); border-radius: 12px; padding: 14px 16px; font-size: 15px; }
   .note p { margin: 0 0 8px; } .note p:last-child { margin: 0; }
-  #sessTime { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-left: auto; }
-  .hist { padding: 12px 0; border-top: 1px solid var(--line); }
-  .hist:first-of-type { border-top: 0; }
-  .empty { color: var(--dim); font-size: 14px; }
-  label.field { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-  label.field > span:first-child { min-width: 120px; }
-  label.field input { font: inherit; width: 110px; background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
-  label.field input.wide { width: auto; flex: 1; min-width: 0; }
+
+  /* Verlauf: Wischen zum Löschen */
+  .swrow { position: relative; overflow: hidden; }
+  .swdel { position: absolute; inset: 0 0 0 auto; width: 88px; display: flex; }
+  .swdel button { flex: 1; border-radius: 0; background: var(--bad); color: #fff; font-size: 15px; min-height: 0; padding: 0; }
+  .swfront { position: relative; z-index: 2; transition: transform .25s; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .swfront.drag { transition: none; }
+  .hist .name { font-weight: 400; }
+  .hist .info { font-size: 13px; margin-top: 2px; }
+
+  /* Formulare als Zellen */
+  label.field { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 6px 16px; position: relative; background: var(--card); margin: 0; }
+  label.field > span:first-child { flex: 1; min-width: 0; }
+  label.field input, label.field select, label.field textarea { font: 17px var(--font); width: 120px; background: none; color: var(--text); border: 0; text-align: right; padding: 6px 0; }
+  label.field input:focus, label.field select:focus, label.field textarea:focus { outline: none; }
+  label.field input.wide, label.field textarea, label.field select { width: auto; flex: 1.4; min-width: 0; }
+  label.field textarea { text-align: left; resize: none; }
+  label.field .unit { color: var(--dim); }
+  .ferr { color: var(--bad); font-size: 13px; padding: 0 16px 8px; background: var(--card); }
+  .group .row.pad { padding: 10px 16px 14px; }
+
   /* Farbschema */
-  .themes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
-  .th { background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 16px; min-height: 0; padding: 12px 6px 10px;
-    display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; letter-spacing: .06em; box-shadow: none; }
-  .th[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
-  .th .sw { width: 36px; height: 36px; border-radius: 50%; position: relative; box-shadow: 0 0 0 1px rgba(128,128,128,.35); }
-  .th .sw i { position: absolute; inset: 12px; border-radius: 50%; }
-  /* Vollbild-Ansichten: Lernmodus, Profile, Einstellungen */
-  .full { position: fixed; inset: 0; background: var(--bg); z-index: 5; display: flex; flex-direction: column;
-    padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); max-width: 900px; margin: 0 auto; overflow-y: auto; }
-  .full .top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .full .top h1 { flex: 1; font-size: 28px; }
-  #learn .sdots { display: flex; gap: 8px; align-items: center; color: var(--dim); font-size: 13px; }
-  #learn .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 16px; text-align: center; margin-bottom: 10px; }
-  #learn .card .num { font-size: 72px; font-weight: 800; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
-  #learn .card .num.wait { font-size: 20px; font-weight: 700; letter-spacing: 0; color: var(--dim); padding: 22px 0; }
-  #learn .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  #learn .grid button { min-height: 90px; font-size: 16px; border-radius: 22px; background: var(--card); color: var(--text); box-shadow: none; border: 3px solid var(--line); }
-  #learn .grid button.pred { border-style: dashed; }
-  #learn .grid button.wide { grid-column: 1 / -1; min-height: 56px; font-size: 13px; }
-  #learn .grid button:disabled { opacity: .3; }
-  #learn .start { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; text-align: center; }
-  #learn .start button { min-height: 72px; font-size: 16px; }
-  #profiles .intro { color: var(--dim); margin: 0 0 16px; }
-  .prof { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
-  .prof:first-child { border-top: 0; }
-  .prof .av { width: 44px; height: 44px; font-size: 18px; }
-  .prof .name { font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
-  .prof.active .name::after { content: "aktiv"; margin-left: 8px; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--acc-ink); background: var(--acc); padding: 3px 7px; border-radius: 99px; vertical-align: 3px; }
-  .menu { position: fixed; z-index: 6; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 6px;
-    box-shadow: 0 18px 50px rgba(0,0,0,.45); min-width: 210px; }
-  .mitem { display: block; width: 100%; text-align: left; background: transparent; color: var(--text); box-shadow: none;
-    border-radius: 12px; text-transform: none; letter-spacing: 0; font-size: 16px; font-weight: 700; padding: 12px 14px; min-height: 46px; }
-  .mitem:hover, .mitem:focus-visible { background: var(--card2); }
-  .tile { position: relative; }
-  .ib { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; min-height: 0; padding: 0; border-radius: 50%;
-    background: transparent; color: var(--dim); box-shadow: inset 0 0 0 1.5px var(--line); font-size: 12px; font-weight: 800;
-    letter-spacing: 0; text-transform: none; font-family: Georgia, serif; font-style: italic; line-height: 24px; }
-  .tile .lbl { padding-right: 26px; }
-  details.more { margin-top: 14px; }
-  details.more > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 44px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--line); font-size: 12px; font-weight: 800;
-    letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
-  details.more > summary::-webkit-details-marker { display: none; }
-  details.more > summary::after { content: "+"; font-size: 16px; }
-  details.more[open] > summary::after { content: "–"; }
-  details.fold > summary { list-style: none; cursor: pointer; font-size: 12px; color: var(--dim); font-weight: 800; margin: 22px 0 10px;
-    text-transform: uppercase; letter-spacing: .14em; }
-  details.fold > summary::-webkit-details-marker { display: none; }
-  details.fold > summary::after { content: " +"; }
-  details.fold[open] > summary::after { content: " –"; }
-  .sheetbg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 8; display: flex; align-items: flex-end; justify-content: center; }
-  .sheet { background: var(--card); border: 1px solid var(--line); border-radius: 22px 22px 0 0; width: 100%; max-width: 640px; max-height: 82vh;
-    overflow-y: auto; padding: 20px 18px calc(18px + env(safe-area-inset-bottom)); }
-  .sheet h3 { margin: 0 0 8px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
-  .sheet p { margin: 0 0 12px; }
-  .sheet .mine { background: var(--card2); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; }
-  .sheet .mine b { font-size: 24px; letter-spacing: -.02em; }
-  .sheet ul { margin: 0 0 12px; padding-left: 18px; } .sheet li { margin-bottom: 6px; }
-  .sheet .src { color: var(--dim); font-size: 13px; }
-  .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; vertical-align: -2px; margin-right: 4px; }
-  .bars i { width: 4px; background: var(--line); border-radius: 1px; }
-  .bars i:nth-child(1) { height: 4px; } .bars i:nth-child(2) { height: 7px; } .bars i:nth-child(3) { height: 10px; } .bars i:nth-child(4) { height: 14px; }
-  .bars.q4 i, .bars.q3 i:nth-child(-n+3), .bars.q2 i:nth-child(-n+2), .bars.q1 i:nth-child(1) { background: var(--ok); }
-  .bars.q1 i:nth-child(1) { background: #ffb020; }
-  .autohint { margin-top: 10px; }
-  /* Verbinden-Bildschirm */
-  #connect .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .slot { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 18px 14px; text-align: center; }
-  .slot .big { font-size: 44px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+  .themes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 12px 10px; }
+  .th { background: none; color: var(--text); border-radius: 12px; min-height: 0; padding: 8px 2px; display: flex; flex-direction: column;
+    align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .th .sw { width: 40px; height: 40px; border-radius: 50%; position: relative; box-shadow: 0 0 0 .5px rgba(128,128,128,.5); }
+  .th .sw i { position: absolute; inset: 13px; border-radius: 50%; }
+  .th[aria-pressed="true"] .sw { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--acc2); }
+
+  /* Vollbild-Ansichten */
+  .full { position: fixed; inset: 0; background: var(--bg); z-index: 5; display: flex; flex-direction: column; overflow-y: auto;
+    padding: calc(8px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); max-width: 700px; margin: 0 auto; }
+  .full .top { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 4px; }
+  .full .top h1 { flex: 1; font-size: 17px; font-weight: 600; text-align: center; margin: 0; }
+  .full .spacer { flex: 1; }
+  .full .bottom { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+
+  /* Einstieg */
+  .ostep { display: flex; flex-direction: column; flex: 1; }
+  .ostep .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .ostep h1.large { text-align: left; }
+  .ostep p { margin: 0 0 14px; color: var(--dim); font-size: 17px; }
+  .brandmark svg { height: 22px; width: auto; fill: var(--text); }
+  .demojump { background: var(--card); border-radius: 16px; padding: 18px; text-align: center; margin: 24px 0; }
+  .demojump .num { font-size: 72px; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+  .demojump .num small { font-size: 24px; color: var(--dim); font-weight: 600; }
+  .demojump .info { margin-top: 6px; }
+  .bticon { width: 64px; height: 64px; border-radius: 16px; background: var(--card); display: grid; place-items: center; margin-bottom: 20px; }
+  .bticon svg { width: 30px; height: 30px; stroke: var(--acc2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Verbinden */
+  #connect .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .slot { background: var(--card); border-radius: 16px; padding: 20px 12px; text-align: center; border: 2px solid transparent; transition: border-color .3s; }
+  .slot .big { font-size: 44px; font-weight: 700; line-height: 1; }
   .slot .st { margin-top: 10px; font-size: 13px; color: var(--dim); min-height: 36px; }
   .slot.on { border-color: var(--ok); }
-  .slot .dot { display: inline-block; margin-right: 6px; vertical-align: 0; }
-  /* Kurzanzeige der Sensoren auf der Hauptseite */
-  .sbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .spill { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line);
-    background: var(--card); color: var(--text); font-size: 13px; font-weight: 800; letter-spacing: .04em; min-height: 0; text-transform: none; box-shadow: none; }
-  .sbar .grow { flex: 1; }
-  textarea.export { width: 100%; height: 40vh; font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--card2); color: var(--text);
-    border: 1px solid var(--line); border-radius: 14px; padding: 10px; resize: vertical; }
-  label.field select, label.field textarea { font: inherit; background: var(--card2); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; flex: 1; min-width: 0; }
-  #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--text); color: var(--bg);
-    padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; display: none; max-width: 90vw; z-index: 10; text-align: center; }
-  @media (max-width: 420px) { .last .num { font-size: 88px; } .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } label.field > span:first-child { min-width: 96px; } }
+  .slot .dot { margin-right: 6px; }
+  .sensor { display: flex; align-items: center; gap: 10px; padding: 11px 16px; position: relative; }
+  .sensor + .sensor::before { content: ""; position: absolute; top: 0; left: 16px; right: 0; height: .5px; background: var(--line); }
+  .sensor { flex-wrap: wrap; }
+  .sensor .grow { min-width: 55%; }
+  .sensor .name { font-weight: 400; }
+  .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 13px; vertical-align: -1px; margin-right: 4px; }
+  .bars i { width: 3px; background: var(--line); border-radius: 1px; }
+  .bars i:nth-child(1) { height: 4px; } .bars i:nth-child(2) { height: 7px; } .bars i:nth-child(3) { height: 10px; } .bars i:nth-child(4) { height: 13px; }
+  .bars.q4 i, .bars.q3 i:nth-child(-n+3), .bars.q2 i:nth-child(-n+2), .bars.q1 i:nth-child(1) { background: var(--ok); }
+  .bars.q1 i:nth-child(1) { background: var(--orange); }
+
+  /* Sheets von unten und Aktionsblatt */
+  .sheetbg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 8; display: flex; align-items: flex-end; justify-content: center; }
+  .sheet { background: var(--bg); border-radius: 14px 14px 0 0; width: 100%; max-width: 700px; max-height: 88vh; overflow-y: auto;
+    padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); }
+  :root:not(.light) .sheet { background: #1c1c1e; }
+  :root:not(.light) .sheet .group, :root:not(.light) .sheet .cell, :root:not(.light) .sheet .sensor, :root:not(.light) .sheet .mine { background: #2c2c2e; }
+  .sheet::before { content: ""; display: block; width: 36px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 12px; }
+  .sheet .shead { display: flex; align-items: center; min-height: 44px; margin-bottom: 6px; }
+  .sheet .shead h3 { flex: 1; margin: 0; font-size: 17px; font-weight: 600; text-align: center; }
+  .sheet { position: relative; }
+  .sheet .shead .navbtn { position: absolute; right: 12px; }
+  .sheet h3 { margin: 0 0 8px; font-size: 20px; font-weight: 700; }
+  .sheet p { margin: 0 0 12px; }
+  .sheet .mine { background: var(--card); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; }
+  .sheet .mine b { font-size: 24px; }
+  .sheet ul { margin: 0 0 12px; padding-left: 20px; } .sheet li { margin-bottom: 6px; }
+  .sheet .src { color: var(--dim); font-size: 13px; }
+  .asheet { width: 100%; max-width: 700px; padding: 0 8px calc(8px + env(safe-area-inset-bottom)); }
+  .asheet .agroup { background: var(--bar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 14px; overflow: hidden; margin-bottom: 8px; }
+  :root:not(.light) .asheet .agroup { background: rgba(40,40,42,.96); }
+  .asheet .atitle { color: var(--dim); font-size: 13px; text-align: center; padding: 14px 16px; }
+  .asheet button { width: 100%; min-height: 57px; border-radius: 0; background: none; color: var(--acc2); font-size: 20px; font-weight: 400; border-top: .5px solid var(--line); }
+  .asheet button.destr { color: var(--bad); }
+  .asheet button.cancel { font-weight: 600; border-top: 0; background: var(--card); border-radius: 14px; }
+  textarea.export { width: 100%; height: 40vh; font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--card); color: var(--text);
+    border: 0; border-radius: 12px; padding: 12px; resize: vertical; }
+
+  /* Tab-Leiste */
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; display: flex; justify-content: center; background: var(--bar);
+    backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: .5px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom); }
+  .tabbar .in { display: flex; width: 100%; max-width: 700px; }
+  .tabbar button { flex: 1; background: none; color: var(--dim); border-radius: 0; min-height: 50px; padding: 6px 0 4px; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; font-size: 10px; font-weight: 500; letter-spacing: .01em; }
+  .tabbar button svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tabbar button[aria-selected="true"] { color: var(--acc2); }
+
+  /* Lernmodus */
+  #learn .sdots { display: flex; gap: 8px; align-items: center; color: var(--dim); font-size: 13px; }
+  #learn .card { background: var(--card); border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 10px; }
+  #learn .card .num { font-size: 72px; font-weight: 700; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  #learn .card .num.wait { font-size: 20px; font-weight: 600; letter-spacing: 0; color: var(--dim); padding: 22px 0; }
+  #learn .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  #learn .grid button { min-height: 88px; font-size: 19px; border-radius: 16px; background: var(--card); color: var(--text); border: 3px solid transparent; }
+  #learn .grid button.pred { border: 3px dashed var(--line); }
+  #learn .grid button.wide { grid-column: 1 / -1; min-height: 52px; font-size: 15px; }
+  #learn .grid button:disabled { opacity: .3; }
+  #learn .start { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; text-align: center; }
+
+  /* Profile */
+  .prof { display: flex; align-items: center; gap: 12px; padding: 10px 16px; position: relative; background: var(--card); }
+  .prof + .prof::before { content: ""; position: absolute; top: 0; left: 72px; right: 0; height: .5px; background: var(--line); }
+  .av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--acc2); color: var(--bg); font-weight: 600; font-size: 17px; flex: none; }
+  .prof .name { font-size: 17px; }
+  .prof.active .name::after { content: " ✓"; color: var(--acc2); font-weight: 600; }
+  .prof button.small { min-height: 32px; }
+
+  #toast { position: fixed; left: 50%; bottom: calc(70px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: rgba(60,60,62,.94); color: #fff;
+    padding: 11px 18px; border-radius: 22px; font-size: 15px; display: none; max-width: 90vw; z-index: 10; text-align: center; backdrop-filter: blur(10px); }
+  @media (max-width: 380px) { .last .num { font-size: 80px; } .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } h1.large { font-size: 30px; } }
 </style>
 </head>
 <body>
+<!-- ================= Tab: Training ================= -->
+<div id="tabTrain" class="page">
+  <div class="nav">
+    <button id="btnBack" class="navback" hidden><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Verlauf</button>
+    <span class="grow"></span>
+    <button id="pillL" class="spill" aria-label="Linker Sensor"></button>
+    <button id="pillR" class="spill" aria-label="Rechter Sensor"></button>
+    <button id="btnSession" class="navbtn destr" hidden>Beenden</button>
+  </div>
+  <h1 id="trainTitle" class="large">Training</h1>
+  <div id="viewBanner" class="subtitle" hidden><span id="viewTitle"></span></div>
+  <div id="battWarn"></div>
 
-<header>
-  <div class="brand"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg><span class="ver">v0.12</span></div>
-  <button id="btnProfile" class="chip" hidden><span id="profAv" class="av"></span><span id="profName"></span></button>
-</header>
+  <div id="idle">
+    <div class="group hero">
+      <p class="info">Wenn du ohne Start springst, beginnt das Training von selbst.</p>
+      <div class="stack">
+        <button id="btnStart" class="wide">Training starten</button>
+        <button id="btnLearn" class="tinted wide">Mit Lernmodus starten</button>
+      </div>
+    </div>
+    <div id="lastSess"></div>
+  </div>
 
-<div id="sbar" class="sbar">
-  <button id="pillL" class="spill"></button>
-  <button id="pillR" class="spill"></button>
-  <span class="grow"></span>
-  <button id="btnSensors" class="ghost small">Sensoren</button>
+  <div id="live" hidden>
+    <div id="liveCtrl" class="runbar">
+      <div><div class="cap">Zeit</div><span id="sessTime">00:00</span></div>
+      <div><div class="cap">Sprünge</div><span id="sessCount">0</span></div>
+      <button id="btnLearn2" class="tinted small">Lernmodus</button>
+    </div>
+
+    <div class="group last">
+      <div><span id="lastH" class="num">–</span> <span class="unit">cm</span></div>
+      <div id="lastSub" class="sub">Letzter Sprung</div>
+      <div id="typeBtns" class="typebtns"></div>
+      <div id="clfInfo" class="info"></div>
+    </div>
+
+    <h2>Sprunghöhen</h2>
+    <div class="chartbox"><canvas id="chartH"></canvas><div id="legend" class="legend"></div></div>
+
+    <div id="stats"></div>
+
+    <h2>Sprünge pro 5 Minuten</h2>
+    <div class="chartbox"><canvas id="chartF" style="height:120px"></canvas></div>
+
+    <h2>Nach Sprungart</h2>
+    <div class="tablewrap"><table id="typeTable"></table></div>
+
+    <h2>Was noch drin ist</h2>
+    <div id="insight" class="note"></div>
+
+    <details class="fold">
+      <summary>Alle Sprünge</summary>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th class="l">Zeit</th><th class="l">Art</th><th class="l">Fuß</th><th>Höhe</th><th>Anlauf</th><th>Rhythmus (ms)</th><th>Kontakt</th><th>RSI</th><th>Landung</th></tr></thead>
+          <tbody id="jumpRows"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <div id="viewActions" hidden>
+      <h2>Exportieren</h2>
+      <div class="group">
+        <button id="btnCsv" class="cell tint">Als CSV-Datei sichern</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<section>
-  <div id="viewBanner" class="banner" hidden><span id="viewTitle"></span><button id="btnBack" class="small">Zurück zum Live-Training</button></div>
-  <div class="row" style="margin-bottom:8px" id="liveCtrl">
-    <button id="btnSession">Training starten</button>
-    <button id="btnLearn" class="ghost">Lernmodus</button>
-    <span id="sessTime">00:00</span>
-  </div>
+<!-- ================= Tab: Verlauf ================= -->
+<div id="tabHist" class="page" hidden>
+  <div class="nav"></div>
+  <h1 class="large">Verlauf</h1>
+  <div id="histList" class="group"><div class="empty">Noch keine Trainings.</div></div>
+  <p id="histFoot" class="foot">Zum Löschen nach links wischen.</p>
 
-  <div class="last">
-    <div><span id="lastH" class="num">–</span> <span class="unit">cm</span></div>
-    <div id="lastSub" class="sub">Letzter Sprung</div>
-  </div>
-  <div id="typeBtns" class="typebtns"></div>
-  <div id="clfInfo" class="info" style="text-align:center;margin-bottom:6px"></div>
-
-  <div id="stats"></div>
-
-  <h2>Sprunghöhen</h2>
-  <canvas id="chartH"></canvas>
-  <div id="legend" class="legend"></div>
-
-  <h2>Sprünge pro 5 Minuten</h2>
-  <canvas id="chartF" style="height:120px"></canvas>
-
-  <h2>Nach Sprungart</h2>
-  <div class="tablewrap"><table id="typeTable"></table></div>
-
-  <h2>Was noch drin ist</h2>
-  <div id="insight" class="note"></div>
-
-  <details class="fold">
-  <summary>Alle Sprünge</summary>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th class="l">Zeit</th><th class="l">Art</th><th class="l">Fuß</th><th>Höhe</th><th>Anlauf</th><th>Rhythmus (ms)</th><th>Kontakt</th><th>RSI</th><th>Landung</th></tr></thead>
-      <tbody id="jumpRows"></tbody>
-    </table>
-  </div>
-  </details>
-</section>
-
-
-<section>
   <h2>Trainingsplan mit KI</h2>
-  <p class="info" style="margin-top:0">Gibt deine Trainings der letzten 4 Wochen als Text aus, zusammen mit einem Prompt. Den kopierst du in die KI, die du sowieso nutzt, und bekommst einen Trainingsplan. Ziel und Position stellst du in den Einstellungen ein.</p>
-  <button id="btnExport" style="width:100%">Daten für KI kopieren</button>
-</section>
-
-<section>
-  <h2>Gespeicherte Trainings</h2>
-  <div id="histList"><div class="empty">Noch keine.</div></div>
-  <div class="row" style="margin-top:10px">
-    <button id="btnBackup" class="ghost small">Trainings dieses Profils als JSON sichern</button>
+  <div class="group">
+    <button id="btnExport" class="cell tint">Daten für KI teilen</button>
   </div>
-</section>
+  <p class="foot">Gibt deine Trainings der letzten 4 Wochen als Text mit einem fertigen Prompt aus. Den schickst du an die KI, die du sowieso nutzt. Position und Ziel trägst du in den Einstellungen ein.</p>
+
+  <h2>Sichern</h2>
+  <div class="group">
+    <button id="btnBackup" class="cell tint">Alle Trainings als JSON-Datei sichern</button>
+  </div>
+</div>
+
+<!-- ================= Tab: Einstellungen ================= -->
+<div id="tabSet" class="page" hidden>
+  <div class="nav"></div>
+  <h1 class="large">Einstellungen</h1>
+
+  <div class="group">
+    <button id="btnProfile" class="cell"><span id="profAv" class="av"></span><span class="grow"><span id="profName"></span><br><span class="info">Profil wechseln oder neu anlegen</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <div class="group">
+    <button id="btnSensors" class="cell"><span class="grow">Sensoren</span><span id="sensSum" class="val2"></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <h2>Profil</h2>
+  <div class="group">
+    <label class="field"><span>Name</span><input id="inName" class="wide" type="text" maxlength="30"></label>
+    <label class="field"><span>Körpergewicht</span><input id="inMass" type="number" min="30" max="200" step="0.5" inputmode="decimal"><span class="unit">kg</span></label>
+    <label class="field"><span>Körpergröße</span><input id="inHeight" type="number" min="120" max="230" step="1" inputmode="numeric"><span class="unit">cm</span></label>
+  </div>
+  <p class="foot">Das Gewicht braucht die App für Absprungkraft und Leistung, die Größe für den Startwert der Schrittlänge.</p>
+
+  <h2>Für den KI-Trainingsplan</h2>
+  <div class="group">
+    <label class="field"><span>Position</span>
+      <select id="inPos"><option value="">keine Angabe</option><option>Außenangriff</option><option>Diagonal</option><option>Mittelblock</option><option>Zuspiel</option><option>Libero</option></select></label>
+    <label class="field"><span>Ziel</span><textarea id="inGoal" rows="2" maxlength="300" placeholder="z. B. höher springen"></textarea></label>
+    <label class="field"><span>Trainingstage</span><input id="inDays" class="wide" type="text" maxlength="80" placeholder="z. B. Mo, Mi, Sa Spiel"></label>
+  </div>
+  <p class="foot">Diese Angaben stehen im Text für die KI. Die App selbst schickt nichts weg.</p>
+
+  <h2>Schritte</h2>
+  <div class="group">
+    <label class="field"><span>Schrittlänge</span><input id="inStep" type="number" min="0.2" max="2" step="0.01" inputmode="decimal"><span class="unit">m</span></label>
+    <button id="btnCalib" class="cell tint">Schrittlänge messen</button>
+  </div>
+  <p class="foot">Zum Messen: antippen, eine bekannte Strecke laufen (z. B. 18 m, einmal die Feldlänge), dann „Fertig“ tippen und die Strecke eingeben. Gemessen ist genauer als der Wert aus der Körpergröße.</p>
+
+  <h2>Sprunghöhe</h2>
+  <div class="group">
+    <label class="field"><span>Landung tiefer als Absprung</span><input id="inDrop" type="number" min="0" max="20" step="0.5" inputmode="decimal"><span class="unit">cm</span></label>
+  </div>
+  <p class="foot">Gleicht aus, dass man mit leicht gebeugten Beinen landet und die Flugzeit dadurch länger wird. 5 cm ist der Mittelwert aus einer Messung mit 27 Personen (Yamashita u. a. 2020). 0 = keine Korrektur.</p>
+
+  <h2>Farbschema</h2>
+  <div class="group"><div id="themes" class="themes"></div></div>
+  <p class="foot">Die Farben der FaltumTracker-Gehäuse. Jedes Profil merkt sich sein eigenes Schema.</p>
+
+  <p class="foot" style="text-align:center;margin-top:28px">FaltumTracker <span class="ver">v0.15</span></p>
+</div>
+
+<!-- ================= Tab-Leiste ================= -->
+<nav class="tabbar" role="tablist"><div class="in">
+  <button data-tab="train" role="tab" aria-selected="true"><svg viewBox="0 0 26 26"><path d="M3 20h4l3-9 4 12 3-8 2 5h4"/><path d="M13 3v4M10.5 5.5 13 3l2.5 2.5"/></svg>Training</button>
+  <button data-tab="hist" role="tab" aria-selected="false"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10"/><path d="M13 7v6l4 3"/></svg>Verlauf</button>
+  <button data-tab="set" role="tab" aria-selected="false"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="3.2"/><path d="M13 2.5v3M13 20.5v3M2.5 13h3M20.5 13h3M5.6 5.6l2.1 2.1M18.3 18.3l2.1 2.1M5.6 20.4l2.1-2.1M18.3 7.7l2.1-2.1"/></svg>Einstellungen</button>
+</div></nav>
+
+<!-- ================= Einstieg beim ersten Öffnen ================= -->
+<div id="onb" class="full" hidden>
+  <div id="onb1" class="ostep">
+    <div class="mid">
+      <div class="brandmark"><svg viewBox="0 -760 7405 790" aria-label="FaltumTracker" role="img"><path d="M519 -702V-565H233V-417H447V-284H233V0H62V-702ZM821 -566Q880 -566 924.5 -542.0Q969 -518 993 -479V-558H1164V0H993V-79Q968 -40 923.5 -16.0Q879 8 820 8Q752 8 696.0 -27.5Q640 -63 607.5 -128.5Q575 -194 575 -280Q575 -366 607.5 -431.0Q640 -496 696.0 -531.0Q752 -566 821 -566ZM871 -417Q820 -417 784.5 -380.5Q749 -344 749 -280Q749 -216 784.5 -178.5Q820 -141 871 -141Q922 -141 957.5 -178.0Q993 -215 993 -279Q993 -343 957.5 -380.0Q922 -417 871 -417ZM1459 -740V0H1288V-740ZM1894 -145V0H1807Q1714 0 1662.0 -45.5Q1610 -91 1610 -194V-416H1542V-558H1610V-694H1781V-558H1893V-416H1781V-192Q1781 -167 1793.0 -156.0Q1805 -145 1833 -145ZM2540 -558V0H2369V-76Q2343 -39 2298.5 -16.5Q2254 6 2200 6Q2136 6 2087.0 -22.5Q2038 -51 2011.0 -105.0Q1984 -159 1984 -232V-558H2154V-255Q2154 -199 2183.0 -168.0Q2212 -137 2261 -137Q2311 -137 2340.0 -168.0Q2369 -199 2369 -255V-558ZM3602 -326V0H3432V-303Q3432 -357 3403.5 -386.5Q3375 -416 3325 -416Q3275 -416 3246.5 -386.5Q3218 -357 3218 -303V0H3048V-303Q3048 -357 3019.5 -386.5Q2991 -416 2941 -416Q2891 -416 2862.5 -386.5Q2834 -357 2834 -303V0H2663V-558H2834V-488Q2860 -523 2902.0 -543.5Q2944 -564 2997 -564Q3060 -564 3109.5 -537.0Q3159 -510 3187 -460Q3216 -506 3266.0 -535.0Q3316 -564 3375 -564Q3479 -564 3540.5 -501.0Q3602 -438 3602 -326Z"/><path d="M4206 -697V-623H4016V0H3925V-623H3734V-697ZM4586 -558V-464H4562Q4409 -464 4409 -298V0H4318V-548H4409V-459Q4433 -506 4477.5 -532.0Q4522 -558 4586 -558ZM4917 -557Q4989 -557 5042.0 -526.0Q5095 -495 5121 -448V-548H5213V0H5121V-102Q5094 -54 5040.5 -22.5Q4987 9 4916 9Q4843 9 4784.0 -27.0Q4725 -63 4691.0 -128.0Q4657 -193 4657 -276Q4657 -360 4691.0 -423.5Q4725 -487 4784.5 -522.0Q4844 -557 4917 -557ZM4935 -478Q4884 -478 4842.0 -454.0Q4800 -430 4775.0 -384.0Q4750 -338 4750 -276Q4750 -213 4775.0 -166.5Q4800 -120 4842.0 -95.5Q4884 -71 4935 -71Q4986 -71 5028.5 -95.5Q5071 -120 5096.0 -166.5Q5121 -213 5121 -275Q5121 -337 5096.0 -383.0Q5071 -429 5028.5 -453.5Q4986 -478 4935 -478ZM5600 -557Q5701 -557 5766.5 -508.0Q5832 -459 5853 -372H5755Q5741 -422 5700.5 -451.0Q5660 -480 5600 -480Q5522 -480 5474.0 -426.5Q5426 -373 5426 -275Q5426 -176 5474.0 -122.0Q5522 -68 5600 -68Q5660 -68 5700.0 -96.0Q5740 -124 5755 -176H5853Q5831 -92 5765.0 -41.5Q5699 9 5600 9Q5522 9 5461.5 -26.0Q5401 -61 5367.0 -125.0Q5333 -189 5333 -275Q5333 -360 5367.0 -423.5Q5401 -487 5461.5 -522.0Q5522 -557 5600 -557ZM6280 0 6065 -242V0H5974V-740H6065V-305L6276 -548H6403L6145 -275L6404 0ZM6986 -240H6548Q6553 -159 6603.5 -113.5Q6654 -68 6726 -68Q6785 -68 6824.5 -95.5Q6864 -123 6880 -169H6978Q6956 -90 6890.0 -40.5Q6824 9 6726 9Q6648 9 6586.5 -26.0Q6525 -61 6490.0 -125.5Q6455 -190 6455 -275Q6455 -360 6489.0 -424.0Q6523 -488 6584.5 -522.5Q6646 -557 6726 -557Q6804 -557 6864.0 -523.0Q6924 -489 6956.5 -429.5Q6989 -370 6989 -295Q6989 -269 6986 -240ZM6722 -480Q6653 -480 6604.5 -436.0Q6556 -392 6549 -314H6895Q6895 -366 6872.0 -403.5Q6849 -441 6809.5 -460.5Q6770 -480 6722 -480ZM7377 -558V-464H7353Q7200 -464 7200 -298V0H7109V-548H7200V-459Q7224 -506 7268.5 -532.0Q7313 -558 7377 -558Z"/></svg></div>
+      <h1 class="large" style="margin-top:18px">Jeder Sprung. Gezählt.</h1>
+      <p>Zwei Sensoren an den Schuhen messen jeden Absprung: Höhe, Sprungart, Anlauf und Landung.</p>
+      <div class="demojump">
+        <div class="num">47 <small>cm</small></div>
+        <div class="info">Angriff · 3 Anlaufschritte · Kontakt 180 ms</div>
+      </div>
+      <p class="foot" style="margin:0;text-align:center">Beispiel, so sieht ein Sprung in der App aus.</p>
+    </div>
+    <div class="bottom"><button id="oGo1" class="wide">Los geht's</button></div>
+  </div>
+
+  <div id="onb2" class="ostep" hidden>
+    <div class="top"><button id="oBack2" class="navback"><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Zurück</button><span class="spacer"></span></div>
+    <h1 class="large">Dein Profil</h1>
+    <div class="group">
+      <label class="field"><span>Name</span><input id="oName" class="wide" type="text" maxlength="30" autocomplete="given-name" placeholder="Pflicht"></label>
+      <div id="oNameErr" class="ferr" hidden></div>
+      <label class="field"><span>Körpergewicht</span><input id="oMass" type="number" min="30" max="200" step="0.5" inputmode="decimal" placeholder="75"><span class="unit">kg</span></label>
+      <div id="oMassErr" class="ferr" hidden></div>
+      <label class="field"><span>Körpergröße</span><input id="oHeight" type="number" min="120" max="230" step="1" inputmode="numeric" placeholder="185"><span class="unit">cm</span></label>
+      <div id="oHeightErr" class="ferr" hidden></div>
+    </div>
+    <p class="foot">Gewicht und Größe braucht die App, um Absprungkraft und Laufstrecke zu berechnen. Alles bleibt auf diesem Handy.</p>
+    <span class="spacer"></span>
+    <div class="bottom"><button id="oGo2" class="wide" disabled>Weiter</button></div>
+  </div>
+
+  <div id="onb3" class="ostep" hidden>
+    <div class="top"><button id="oBack3" class="navback"><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Zurück</button><span class="spacer"></span></div>
+    <div class="mid">
+      <div class="bticon"><svg viewBox="0 0 30 30"><path d="M9 9l12 12-6 5V4l6 5L9 21"/></svg></div>
+      <h1 class="large">Sensoren per Bluetooth</h1>
+      <p>Die Sensoren funken ihre Messungen per Bluetooth an dein Handy. Die App verbindet sich nur mit FaltumTracker-Sensoren.</p>
+      <p>Nach dem Tippen öffnet Chrome eine Liste. Wähl dort VB-Schuh-L oder VB-Schuh-R. Den zweiten Sensor verbindest du gleich danach.</p>
+      <div id="oBtWarn" class="warn" hidden></div>
+    </div>
+    <div class="bottom">
+      <button id="oBt" class="wide">Bluetooth erlauben</button>
+      <button id="oDemo" class="tinted wide">Erst mit Demo-Sensoren ansehen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Sensoren verbinden ================= -->
+<div id="connect" class="full" hidden>
+  <div class="top"><span class="spacer"></span><button id="cDetails" class="navbtn">Details</button></div>
+  <h1 class="large">Sensoren</h1>
+  <div id="warn" class="warn" hidden></div>
+  <div id="cBattWarn"></div>
+  <div class="slots">
+    <div id="slotL" class="slot"></div>
+    <div id="slotR" class="slot"></div>
+  </div>
+  <div id="cAuto" class="info" style="text-align:center;margin:0 0 14px"></div>
+  <div id="cShake" class="foot" style="text-align:center;margin:0 0 14px" hidden>Nichts gefunden? Sensor kurz schütteln, dann wacht er auf.</div>
+  <span class="spacer"></span>
+  <div class="bottom">
+    <button id="btnConnect" class="wide">Sensor verbinden</button>
+    <button id="btnDemo" class="tinted wide">Demo-Sensoren</button>
+    <button id="cGo" class="navbtn" style="align-self:center">Weiter ohne Sensoren</button>
+  </div>
+</div>
+
+<div id="detBg" class="sheetbg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Sensor-Details">
+    <div class="shead"><h3>Sensor-Details</h3><button id="detClose" class="navbtn" style="font-weight:600">Fertig</button></div>
+    <div class="group"><div id="sensorList"><div class="empty">Noch kein Sensor verbunden.</div></div></div>
+    <h2>Zeitabgleich prüfen</h2>
+    <div class="group">
+      <button id="btnSyncTest" class="cell tint">Test starten</button>
+      <button id="btnSyncApply" class="cell tint" hidden>Versatz übernehmen</button>
+    </div>
+    <p class="foot">Beide Sensoren in die Hände nehmen und fünfmal kräftig mit den Gehäusen aneinanderschlagen, mit etwa einer Sekunde Pause. Beide spüren den Schlag im selben Moment, die App zeigt, wie weit ihre Zeiten auseinanderliegen.</p>
+    <p id="syncOut" class="foot"></p>
+    <h2>Akku</h2>
+    <div class="group"><button id="btnBattLog" class="cell tint">Akku-Verlauf als CSV sichern</button></div>
+    <p class="foot">Die App schreibt bei verbundenem Sensor jede Minute die Akkuspannung mit. Damit lässt sich die Umrechnung in Prozent an deinen Akku anpassen.</p>
+    <h2>Automatisch verbinden</h2>
+    <p id="autoHint" class="foot" style="margin-top:0">Damit sich die Sensoren beim Öffnen der App von selbst verbinden, in Chrome chrome://flags öffnen und diese zwei Einträge auf „Enabled“ stellen: „Experimental Web Platform features“ und „Use the new permissions backend for Web Bluetooth“. Danach Chrome neu starten und die Sensoren einmal per Knopf verbinden.</p>
+  </div>
+</div>
+
+<!-- ================= Training beenden: Aktionsblatt ================= -->
+<div id="endBg" class="sheetbg" hidden>
+  <div class="asheet" role="dialog" aria-modal="true">
+    <div class="agroup">
+      <div id="endTitle" class="atitle">Training beenden und speichern?</div>
+      <button id="endYes" class="destr">Training beenden</button>
+    </div>
+    <div class="agroup"><button id="endNo" class="cancel">Weiter trainieren</button></div>
+  </div>
+</div>
+
+<!-- ================= Zusammenfassung nach dem Training ================= -->
+<div id="sum" class="full" hidden>
+  <div class="top"><span class="spacer"></span><button id="sumDone" class="navbtn" style="font-weight:600">Fertig</button></div>
+  <h1 class="large">Training gespeichert</h1>
+  <div id="sumDate" class="subtitle"></div>
+  <div id="sumTiles" class="tiles"></div>
+  <h2>Sprunghöhen</h2>
+  <div class="chartbox"><canvas id="sumChart"></canvas></div>
+  <span class="spacer"></span>
+  <div class="bottom">
+    <button id="sumKi" class="tinted wide">Daten für KI teilen</button>
+    <button id="sumView" class="navbtn" style="align-self:center">Alle Werte ansehen</button>
+  </div>
+</div>
 
 <div id="learn" class="full" hidden>
   <div class="top">
-    <h1>Lernmodus</h1>
+    <h1 style="text-align:left">Lernmodus</h1>
     <div id="lDots" class="sdots"></div>
     <span id="lTime" style="font-weight:700;font-variant-numeric:tabular-nums"></span>
     <button id="lClose" class="ghost small">Schließen</button>
@@ -279,113 +565,41 @@
 </div>
 
 <div id="profiles" class="full" hidden>
-  <div class="top">
-    <h1>Profile</h1>
-    <button id="pClose" class="ghost small">Schließen</button>
+  <div class="top"><span class="spacer"></span><button id="pClose" class="navbtn" style="font-weight:600">Fertig</button></div>
+  <h1 class="large">Profile</h1>
+  <p id="pIntro" class="foot" style="margin:-4px 0 14px"></p>
+  <div class="group"><div id="pList"></div></div>
+  <h2>Neues Profil</h2>
+  <div class="group">
+    <label class="field"><span>Name</span><input id="pNewName" class="wide" type="text" maxlength="30" autocomplete="off"></label>
+    <label class="field"><span>Körpergewicht</span><input id="pNewMass" type="number" min="30" max="200" step="0.5" inputmode="decimal"><span class="unit">kg</span></label>
+    <label class="field"><span>Körpergröße</span><input id="pNewHeight" type="number" min="120" max="230" step="1" inputmode="numeric"><span class="unit">cm</span></label>
+    <button id="pCreate" class="cell tint">Profil anlegen</button>
   </div>
-  <p id="pIntro" class="intro"></p>
-  <section><div id="pList"></div></section>
-  <section>
-    <h2>Neues Profil</h2>
-    <label class="field"><span>Name</span> <input id="pNewName" class="wide" type="text" maxlength="30" autocomplete="off"></label>
-    <label class="field"><span>Körpergewicht</span> <input id="pNewMass" type="number" min="30" max="200" step="0.5" inputmode="decimal"> kg</label>
-    <label class="field"><span>Körpergröße</span> <input id="pNewHeight" type="number" min="120" max="230" step="1" inputmode="numeric"> cm</label>
-    <button id="pCreate" style="width:100%;margin-top:10px">Profil anlegen</button>
-  </section>
-</div>
-
-<div id="pMenu" class="menu" hidden>
-  <button id="mSettings" class="mitem">Einstellungen</button>
-  <button id="mProfiles" class="mitem">Profil wechseln</button>
-</div>
-
-<div id="settings" class="full" hidden>
-  <div class="top">
-    <h1>Einstellungen</h1>
-    <button id="sClose" class="ghost small">Fertig</button>
-  </div>
-  <section>
-    <h2>Profil</h2>
-    <label class="field"><span>Name</span> <input id="inName" class="wide" type="text" maxlength="30"></label>
-    <label class="field"><span>Körpergewicht</span> <input id="inMass" type="number" min="30" max="200" step="0.5" inputmode="decimal"> kg</label>
-    <label class="field"><span>Körpergröße</span> <input id="inHeight" type="number" min="120" max="230" step="1" inputmode="numeric"> cm</label>
-    <div class="info">Das Körpergewicht braucht die App für Absprungkraft und Leistung, die Größe für den Startwert der Schrittlänge.</div>
-  </section>
-  <section>
-    <h2>Für den KI-Trainingsplan</h2>
-    <label class="field"><span>Position</span>
-      <select id="inPos"><option value="">keine Angabe</option><option>Außenangriff</option><option>Diagonal</option><option>Mittelblock</option><option>Zuspiel</option><option>Libero</option></select></label>
-    <label class="field"><span>Ziel</span> <textarea id="inGoal" rows="2" maxlength="300" placeholder="z. B. höher springen, mehr Ausdauer im 5. Satz"></textarea></label>
-    <label class="field"><span>Trainingstage</span> <input id="inDays" class="wide" type="text" maxlength="80" placeholder="z. B. Mo und Mi Training, Sa Spiel"></label>
-    <div class="info">Diese Angaben stehen im Text für die KI. Die App selbst schickt nichts weg.</div>
-  </section>
-  <section>
-    <h2>Schritte</h2>
-    <label class="field"><span>Schrittlänge</span> <input id="inStep" type="number" min="0.2" max="2" step="0.01" inputmode="decimal"> m</label>
-    <div class="row" style="margin-top:6px">
-      <button id="btnCalib" class="ghost small">Schrittlänge messen</button>
-    </div>
-    <div class="info" style="margin-top:8px">Zum Messen: Knopf drücken, eine bekannte Strecke laufen (z. B. 18 m, einmal die Feldlänge), dann „Fertig“ drücken und die Strecke eingeben. Gemessen ist genauer als der Wert aus der Körpergröße.</div>
-  </section>
-  <section>
-    <h2>Sprunghöhe</h2>
-    <label class="field"><span>Landung tiefer als Absprung</span> <input id="inDrop" type="number" min="0" max="20" step="0.5" inputmode="decimal"> cm</label>
-    <div class="info">Korrigiert die Sprunghöhe, weil man mit leicht gebeugten Beinen landet und die Flugzeit dadurch länger wird. 5 cm ist der Mittelwert aus einer Messung mit 27 Personen (Yamashita u. a. 2020). 0 = keine Korrektur.</div>
-  </section>
-  <section>
-    <h2>Farbschema</h2>
-    <div id="themes" class="themes"></div>
-    <div class="info" style="margin-top:8px">Die Farben der FaltumTracker-Gehäuse. Jedes Profil merkt sich sein eigenes Schema.</div>
-  </section>
-  <section>
-    <h2>Daten</h2>
-    <div class="row"><button id="btnBackup2" class="ghost small">Trainings dieses Profils als JSON sichern</button></div>
-  </section>
 </div>
 
 <div id="infoBg" class="sheetbg" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
     <div id="infoBody"></div>
-    <button id="infoClose" style="width:100%;margin-top:6px">Schließen</button>
+    <button id="infoClose" class="tinted wide" style="margin-top:6px">Schließen</button>
   </div>
-</div>
-
-<div id="connect" class="full" hidden>
-  <div class="top">
-    <h1>Sensoren</h1>
-  </div>
-  <div id="warn" class="warn" hidden></div>
-  <div class="slots">
-    <div id="slotL" class="slot"></div>
-    <div id="slotR" class="slot"></div>
-  </div>
-  <div class="row" style="margin-bottom:10px">
-    <button id="btnConnect" style="flex:1">Sensor verbinden</button>
-    <button id="btnDemo" class="ghost">Demo</button>
-  </div>
-  <div id="autoHint" class="info autohint" hidden>Damit sich die Sensoren beim Öffnen der App von selbst verbinden, in Chrome <b>chrome://flags</b> öffnen und diese zwei Einträge auf „Enabled“ stellen: <b>Experimental Web Platform features</b> und <b>Use the new permissions backend for Web Bluetooth</b>. Danach Chrome neu starten und die Sensoren einmal per Knopf verbinden.</div>
-  <details class="fold"><summary>Details</summary>
-    <section><div id="sensorList"><div class="empty">Noch kein Sensor verbunden.</div></div></section>
-  </details>
-  <div style="flex:1"></div>
-  <div id="cAuto" class="info" style="text-align:center;margin:10px 0"></div>
-  <button id="cGo" style="width:100%">Weiter</button>
 </div>
 
 <div id="exportBg" class="sheetbg" hidden>
   <div class="sheet" role="dialog" aria-modal="true">
-    <h3>Daten für deine KI</h3>
-    <p class="info">Kopier den Text und füg ihn in einen Chat mit einer KI deiner Wahl ein. Den Prompt am Anfang kannst du vorher anpassen.</p>
+    <div class="shead"><h3>Daten für deine KI</h3></div>
+    <p class="foot" style="margin:0 0 10px">Kopier den Text und füg ihn in einen Chat mit einer KI deiner Wahl ein. Den Prompt am Anfang kannst du vorher anpassen.</p>
     <textarea id="exportText" class="export" spellcheck="false"></textarea>
     <div class="row" style="margin-top:10px">
-      <button id="exportCopy" style="flex:1">Kopieren</button>
-      <button id="exportShare" class="ghost" hidden>Teilen</button>
-      <button id="exportClose" class="ghost">Schließen</button>
+      <button id="exportShare" style="flex:1" hidden>Teilen</button>
+      <button id="exportCopy" class="tinted" style="flex:1">Kopieren</button>
+      <button id="exportClose" class="tinted">Schließen</button>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
+
 
 <script>
 'use strict';
@@ -534,7 +748,7 @@ async function connectNew() {
   try {
     const device = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: 'VB-' }, { services: [SVC_UUID] }],
-      optionalServices: [SVC_UUID]
+      optionalServices: [SVC_UUID, 'battery_service']
     });
     let s = sensors.get(device.id);
     if (!s) {
@@ -573,6 +787,14 @@ async function connectGatt(s) {
       sc.addEventListener('characteristicvaluechanged', s.onStats);
       await sc.startNotifications();
       onStatsData(s, await sc.readValue());
+    } catch {}
+    // Akku (Firmware ab v3.4): Standard-Batteriedienst. Fehlt er, wird einfach nichts angezeigt.
+    try {
+      const bs = await server.getPrimaryService('battery_service');
+      const bl = await bs.getCharacteristic('battery_level');
+      bl.addEventListener('characteristicvaluechanged', e => onBattLevel(s, e.target.value.getUint8(0)));
+      await bl.startNotifications();
+      onBattLevel(s, (await bl.readValue()).getUint8(0));
     } catch {}
     s.status = 'verbunden'; s.retry = 0; s.offs = [];
     s.needReplay = true; s.replaying = false; s.liveMax = 0; s.lastPkt = Date.now(); s.syncTimes = [];   // Firmware v3: nach dem ersten Zeitsignal Verpasstes abholen
@@ -634,6 +856,7 @@ function onEvent(s, dv) {
   if (type === 7) {
     s.syncTimes.push(Date.now()); while (s.syncTimes.length > 20) s.syncTimes.shift();
     if (dv.byteLength >= 8) { const r = dv.getInt8(7); s.rssi = r < 0 ? r : null; }
+    if (dv.byteLength >= 12) onBattSync(s, dv.getUint8(8), dv.getUint8(9), dv.getUint16(10, true));
     return onSync(s, dv.getUint32(1, true), dv.byteLength >= 7 ? dv.getUint16(5, true) : null);
   }
   if (!s.offs.length) { (s.early ||= []).push(dv); return; }   // erst Zeitsignal abwarten
@@ -648,7 +871,7 @@ function onEvent(s, dv) {
   if (replay) { s.contigT = Math.max(s.contigT, evT); s.replayN++; }
   else if (s.replaying || s.needReplay) s.liveMax = Math.max(s.liveMax || 0, evT);   // Live-Ereignis vor/während dem Nachladen: Lücke davor bleibt offen
   else s.contigT = Math.max(s.contigT, evT);
-  const at = Math.round(evT + s.offset);
+  const at = Math.round(evT + s.offset + (s.side === 'R' ? (settings.syncBias || 0) : 0));
   if (type === 5 && dv.byteLength >= 13) {
     addStep([at, s.side === 'L' ? 0 : s.side === 'R' ? 1 : 2,
              dv.getUint16(5, true) / 100, dv.getUint16(7, true),
@@ -659,6 +882,97 @@ function onEvent(s, dv) {
                  peak: dv.getUint16(9, true) / 100, contact: dv.getUint16(11, true), clipped: !!(flags & 1), v2: true };
     if (replay) commitSingle(ev); else footEvent(ev);
   }
+}
+
+// ======================================================================
+// Akku: Prozent aus dem Batteriedienst 0x180F, Lade-Flag und Spannung aus dem Zeitsignal (v3.4).
+// Der letzte bekannte Stand jedes Sensors wird gemerkt, damit er auch ohne Verbindung sichtbar bleibt.
+// ======================================================================
+let battStore = loadLS('vb_batt', {});              // { 'VB-Schuh-L': { pct, chg, mv, at } }
+const battKey = s => (s.demo ? 'demo:' : '') + s.name;   // Demo-Werte nicht als echte Sensorwerte merken
+function battSave(s, patch) {
+  const k = battKey(s);
+  const b = battStore[k] = Object.assign(battStore[k] || {}, patch, { at: Date.now() });
+  s.batt = b;
+  if (!s.demo) { clearTimeout(battSave.t); battSave.t = setTimeout(() => saveLS('vb_batt', Object.fromEntries(Object.entries(battStore).filter(([k]) => !k.startsWith('demo:')))), 500); }
+  battCheckWarn(s);
+}
+function onBattLevel(s, pct) {
+  if (pct > 100) return;
+  s.hasBatt = true;
+  battSave(s, { pct });
+  renderSensors();
+}
+function onBattSync(s, flags, pct, mv) {
+  s.hasBatt = true;
+  const patch = { chg: !!(flags & 1) };
+  if (flags & 2) { patch.pct = pct; patch.mv = mv; }
+  const prev = Object.assign({}, battStore[battKey(s)]);
+  battSave(s, patch);
+  if (s.demo) return;
+  // Verlauf der Spannung für den Akkutest (neuer Wert kommt etwa einmal pro Minute)
+  if ((flags & 2) && mv && (mv !== prev.mv || Date.now() - (prev.logAt || 0) > 55000)) {
+    battStore[battKey(s)].logAt = Date.now();
+    const key = 'vb_battlog_' + s.name, log = loadLS(key, []);
+    log.push([Date.now(), mv, pct, flags & 1]);
+    while (log.length > 3000) log.shift();         // reicht für gut 2 Tage Laufzeit
+    saveLS(key, log);
+  }
+}
+// Akkustand einer Seite: vom verbundenen Sensor oder der zuletzt gemerkte Wert
+function battOf(side) {
+  const s = sensorFor(side);
+  const b = battStore[s ? battKey(s) : 'VB-Schuh-' + side];
+  if (!b || b.pct == null && !b.chg) return null;
+  const live = !!(s && s.hasBatt && linkState(s).cls === 'on');
+  return { pct: b.pct, chg: !!b.chg && live, at: b.at, live, mv: b.mv };
+}
+const battLevel = p => p == null ? 'ok' : p < 10 ? 'crit' : p < 20 ? 'low' : 'ok';
+function battIcon(b) {
+  const p = b.pct ?? 0, w = Math.max(1.5, Math.round(16 * p / 100 * 10) / 10);
+  const col = b.chg ? 'var(--ok)' : battLevel(b.pct) === 'crit' ? 'var(--bad)' : battLevel(b.pct) === 'low' ? 'var(--orange)' : 'currentColor';
+  return `<svg class="batt" viewBox="0 0 25 12" aria-hidden="true"><rect x=".75" y=".75" width="20.5" height="10.5" rx="3" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.5"/>` +
+    `<rect x="22.6" y="4" width="1.6" height="4" rx=".8" fill="currentColor" fill-opacity=".45"/>` +
+    (b.chg ? `<path d="M12.2 1.8 7.6 6.6h3.1l-1.4 3.6 4.6-4.8h-3.1z" fill="currentColor"/>` : `<rect x="2.5" y="2.5" width="${w}" height="7" rx="1.5" fill="${col}"/>`) + `</svg>`;
+}
+function battText(b) { return b.chg ? 'lädt' : b.pct + ' %'; }
+function agoText(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? 'gerade eben' : m < 60 ? `vor ${m} min` : m < 1440 ? `vor ${Math.round(m / 60)} h` : `vor ${Math.round(m / 1440)} Tagen`;
+}
+function battHtml(side, long = false) {
+  const b = battOf(side);
+  if (!b) return '';
+  const cls = 'battw' + (b.live ? '' : ' stale') + (b.chg ? '' : ' ' + battLevel(b.pct));
+  return `<span class="${cls}" aria-label="Akku ${b.chg ? 'lädt' : b.pct + ' %'}">${battIcon(b)}${b.chg ? '' : esc(b.pct + ' %')}` +
+    (long && !b.live ? ` · ${agoText(b.at)}` : '') + `</span>`;
+}
+// Warnung beim Unterschreiten von 10 % einmal als Meldung, sonst als Hinweis im Training
+const battWarned = {};
+function battCheckWarn(s) {
+  const b = s.batt; if (!b || b.chg || b.pct == null) return;
+  if (b.pct < 10 && !battWarned[s.name]) { battWarned[s.name] = true; toast(`Akku ${s.side === 'L' ? 'links' : 'rechts'} fast leer (${b.pct} %). Bald aufladen.`, 5000); }
+  if (b.pct >= 15) battWarned[s.name] = false;
+}
+function renderBattWarn() {
+  const out = [];
+  for (const side of ['L', 'R']) {
+    const b = battOf(side);
+    if (!b || b.chg || b.pct == null || b.pct >= 20) continue;
+    if (!b.live && Date.now() - b.at > 30 * 60000) continue;   // alte Werte nicht anmahnen
+    out.push({ side, pct: b.pct, crit: b.pct < 10 });
+  }
+  const html = out.map(o => o.crit
+    ? `<div class="warn">Akku ${o.side === 'L' ? 'links' : 'rechts'} fast leer (${o.pct} %). Bald aufladen, sonst hört der Sensor mitten im Training auf zu messen.</div>`
+    : `<div class="battnote">${battIcon({ pct: o.pct })} Akku ${o.side === 'L' ? 'links' : 'rechts'} fast leer (${o.pct} %)</div>`).join('');
+  for (const id of ['battWarn', 'cBattWarn']) { const el = $(id); if (el && el.innerHTML !== html) el.innerHTML = html; }
+}
+function exportBattLog() {
+  const lines = ['zeit;sensor;spannung_mv;prozent;laedt'];
+  for (const name of ['VB-Schuh-L', 'VB-Schuh-R', ...Object.keys(battStore)].filter((v, i, a) => a.indexOf(v) === i && !v.startsWith('demo:')))
+    for (const [t, mv, pct, chg] of loadLS('vb_battlog_' + name, [])) lines.push([new Date(t).toISOString(), name, mv, pct, chg ? 'ja' : 'nein'].join(';'));
+  if (lines.length < 2) { toast('Noch keine Akkuwerte aufgezeichnet (ab Firmware v3.4).'); return; }
+  download('akku-verlauf.csv', '\ufeff' + lines.join('\r\n'), 'text/csv');
 }
 
 function noteSeq(s, seq) {
@@ -777,6 +1091,7 @@ function addStep(st) {
     while (stepBuf.length && stepBuf[0][S_T] < cut) stepBuf.shift();
   }
   if (session && st[S_T] >= session.start - 5000) { insertSorted(session.steps, st, x => x[S_T]); session.v2 = true; markDirty(); }
+  syncTestStep(st);
   if (calib) { calib.count++; calib.sides.add(st[S_SIDE]); $('btnCalib').textContent = `Fertig (${calib.count} Schritte)`; }
 }
 
@@ -796,7 +1111,8 @@ function buildPair(a, ev) {
   const L = a.side === 'L' ? a : ev, R = a.side === 'L' ? ev : a;
   const cs = [a.contact, ev.contact].filter(c => c > 0);
   // Der Fuß, der zuletzt aufsetzt, hat den kürzeren Kontakt und macht den eigentlichen Absprung.
-  return { at: Math.min(a.at, ev.at), feet: 'B', h: (a.h + ev.h) / 2,
+  const toL = L.at - L.flight, toR = R.at - R.flight;
+  return { at: Math.min(a.at, ev.at), feet: 'B', h: (a.h + ev.h) / 2, toL, toR,
            flight: Math.round((a.flight + ev.flight) / 2), peak: Math.max(a.peak, ev.peak),
            hL: L.h, hR: R.h, peakL: L.peak, peakR: R.peak,
            contact: cs.length ? Math.min(...cs) : 0, contactL: L.contact || null, contactR: R.contact || null,
@@ -862,6 +1178,21 @@ function mergeInto(j, ev) {
   markDirty(true);
   if (!viewed && !anyReplaying()) renderAll();
 }
+
+// ---------- Stemmschritt: wie weit setzen die zwei Füße vor dem Absprung nacheinander auf? ----------
+// Beim Angriff setzt erst der eine Fuß auf, der andere einen Tick später (Stemmschritt).
+// Beim Block stehen oder landen beide Füße fast gleichzeitig.
+// Aufsetzen = Absprung minus Kontaktzeit. Die Kontaktzeit misst jeder Sensor mit seiner eigenen Uhr,
+// nur der Unterschied der Absprungzeiten hängt vom Uhrenabgleich zwischen den Schuhen ab.
+// Ergebnis in ms: positiv = rechts hat später aufgesetzt, negativ = links später, null = unbekannt.
+function plantGapOf(j) {
+  if (j.feet === 'B' && j.contactL > 0 && j.contactR > 0) {
+    const toL = j.toL ?? j.to, toR = j.toR ?? j.to;
+    return Math.round((toR - j.contactR) - (toL - j.contactL));
+  }
+  return j.app && j.app.stepGapLR != null ? j.app.stepGapLR : null;
+}
+const STAGGER_MS = 60;     // ab diesem Abstand zählt es als Stemmschritt (Startwert, wird mit Markierungen gelernt)
 
 // ---------- Höhe korrigieren: Landung mit leicht gebeugten Beinen ----------
 // Landet der Körperschwerpunkt um d tiefer, als er beim Absprung war, ist die Flugzeit
@@ -935,15 +1266,21 @@ function analyzeApproach(steps, to) {
   const rest = prevT == null ? 30000 : startT - prevT;
   const gaps = [];
   for (let i = 1; i < n; i++) gaps.push(chain[i][S_T] - chain[i - 1][S_T]);
-  const lats = [], rots = [];
-  for (const st of chain) {
+  const lats = [], latsPre = [], rots = [];
+  chain.forEach((st, i) => {
     const g = [st[S_G], st[S_G + 1], st[S_G + 2]], sum = g[0] + g[1] + g[2];
-    if (sum < 100) continue;                        // kaum Bewegung -> keine Aussage
-    lats.push(1 - g[pitchAxis(steps, st[S_SIDE])] / sum);
-    rots.push(sum);
-  }
+    if (sum < 100) return;                          // kaum Bewegung -> keine Aussage
+    const l = 1 - g[pitchAxis(steps, st[S_SIDE])] / sum;
+    lats.push(l); rots.push(sum);
+    if (i < n - 2) latsPre.push(l);                 // die letzten zwei sind der Stemmschritt, da dreht der Fuß ein
+  });
+  // letztes Aufsetzen je Fuß kurz vor dem Absprung (Ersatz, wenn die Sprungmeldung keine Kontaktzeit hat)
+  let lastL = null, lastR = null;
+  for (const st of chain) { if (to - st[S_T] > 700) continue; if (st[S_SIDE] === 0) lastL = st[S_T]; else if (st[S_SIDE] === 1) lastR = st[S_T]; }
   return { n, gaps, lastGap: gaps.length ? gaps[gaps.length - 1] : null, meanGap: gaps.length ? mean(gaps) : null,
-           dur: n ? to - chain[0][S_T] : 0, rest, lat: lats.length ? mean(lats) : null, rot: rots.length ? mean(rots) : null };
+           dur: n ? to - chain[0][S_T] : 0, rest, lat: lats.length ? mean(lats) : null, rot: rots.length ? mean(rots) : null,
+           latPre: latsPre.length ? mean(latsPre) : null,
+           stepGapLR: lastL != null && lastR != null ? Math.round(lastR - lastL) : null };
 }
 
 // Die Achse, um die sich der Fuß beim normalen Vorwärtsschritt am stärksten dreht (Abrollen).
@@ -968,18 +1305,25 @@ function pitchAxis(steps, side) {
 function features(j) {
   const a = j.app;
   if (!a) return null;
-  return [Math.min(a.n, 6), a.lastGap ?? 800, a.meanGap ?? 800, a.lat ?? 0.5, (a.rot ?? 0) / 100,
-          j.contact || 0, Math.min(a.dur, 4000), j.feet === 'B' ? 1 : 0, Math.min(a.rest ?? 2000, 15000)];
+  const pg = plantGapOf(j);
+  return [Math.min(a.n, 6), a.lastGap ?? 800, a.meanGap ?? 800, a.latPre ?? a.lat ?? 0.5, (a.rot ?? 0) / 100,
+          j.contact || 0, Math.min(a.dur, 4000), j.feet === 'B' ? 1 : 0, Math.min(a.rest ?? 2000, 15000),
+          pg == null ? 0 : Math.min(Math.abs(pg), 400), pg == null ? 0 : Math.max(-400, Math.min(400, pg))];
 }
 
 function ruleClassify(j) {
   const a = j.app;
   if (!a) return null;
-  const sideways = a.lat != null && a.lat >= 0.5;
+  // seitlich nur nach den Schritten vor dem Stemmschritt beurteilen: beim Stemmschritt dreht der Fuß immer ein
+  const latV = a.latPre ?? (a.n >= 4 ? a.lat : null);
+  const sideways = latV != null && latV >= 0.5;
+  const pg = plantGapOf(j), stagger = pg != null && Math.abs(pg) >= STAGGER_MS;
   if (a.n >= 2 && !sideways && (a.rest ?? 0) >= 3000) return 'Aufschlag';   // erst Stillstand, dann Anlauf
-  if (a.n >= 3 && !sideways) return 'Angriff';
-  if (a.n <= 1 || sideways) return 'Block';
-  return 'Angriff';
+  if (j.feet !== 'B' && a.n >= 2) return 'Angriff';                         // einbeinig mit Anlauf (z. B. Schuss am Netz)
+  if (pg != null) return stagger && (a.n >= 2 || !sideways) ? 'Angriff' : 'Block';
+  // ohne Stemmschritt-Messung: Anlauf nach vorne = Angriff
+  if (a.n >= 2 && !sideways) return 'Angriff';
+  return 'Block';
 }
 
 function trainingSet() {
@@ -1166,7 +1510,6 @@ async function stopSession() {
   const s = session; session = null;
   if (s.jumps.length) {
     await dbPutSession(s); saved.unshift(s); allSaved.unshift(s);
-    toast('Training gespeichert: ' + s.jumps.length + ' Sprünge');
   } else toast('Keine Sprünge – nicht gespeichert');
   await dbSetKV(curKey(), null);
   trainCache = null;
@@ -1174,6 +1517,7 @@ async function stopSession() {
   if (learnOpen) { learnOpen = false; $('learn').hidden = true; }
   learnUndo = [];
   renderAll();
+  return s.jumps.length ? s : null;
 }
 
 function markDirty(now = false) {
@@ -1233,6 +1577,8 @@ function sideState(side) { const s = sensorFor(side); return s ? linkState(s) : 
 
 function openConnect(auto = false) {
   connectOpen = true; connectAuto = auto; $('connect').hidden = false; document.body.style.overflow = 'hidden';
+  $('cShake').hidden = true; clearTimeout(openConnect.t);
+  openConnect.t = setTimeout(() => { if (connectOpen && !(sideState('L').cls === 'on' && sideState('R').cls === 'on')) $('cShake').hidden = false; }, 10000);
   renderConnect();
 }
 function closeConnect() {
@@ -1246,22 +1592,29 @@ function renderConnect() {
     const st = sideState(side), el = $('slot' + side);
     el.className = 'slot' + (st.cls === 'on' ? ' on' : '');
     el.innerHTML = `<div class="big">${side}</div><div class="info">${side === 'L' ? 'Linker Schuh' : 'Rechter Schuh'}</div>
-      <div class="st"><span class="dot ${st.cls === 'none' ? '' : st.cls}"></span>${st.cls === 'on' && st.q ? barsHtml(st.q) : ''}${esc(st.text)}</div>`;
+      <div class="st"><span class="dot ${st.cls === 'none' ? '' : st.cls}"></span>${st.cls === 'on' && st.q ? barsHtml(st.q) : ''}${esc(st.text)}</div>
+      <div class="sbatt">${battHtml(side, true)}</div>`;
   }
   const both = sideState('L').cls === 'on' && sideState('R').cls === 'on';
-  $('cGo').textContent = both || sensors.size ? 'Weiter' : 'Ohne Sensoren weiter';
+  const nOn = ['L', 'R'].filter(x => sideState(x).cls === 'on').length;
+  $('cGo').textContent = both ? 'Weiter' : nOn ? 'Mit einem Sensor weiter' : 'Weiter ohne Sensoren';
+  if (both) $('cShake').hidden = true;
   if (both && connectAuto && !connectDoneTimer) {
     $('cAuto').textContent = 'Beide Sensoren liefern Daten.';
-    connectDoneTimer = setTimeout(() => { if (connectOpen) closeConnect(); }, 1500);
+    try { navigator.vibrate && navigator.vibrate(40); } catch {}
+    connectDoneTimer = setTimeout(() => { if (connectOpen) closeConnect(); }, 1000);
   } else if (!both) $('cAuto').textContent = sensors.size ? '' : 'Schuhe anziehen, Sensoren kurz bewegen, dann verbinden.';
 }
 
 function renderSensorBar() {
   for (const side of ['L', 'R']) {
     const st = sideState(side);
-    $('pill' + side).innerHTML = `<span class="dot ${st.cls === 'none' ? '' : st.cls}"></span>${side}${st.cls === 'on' && st.q ? ' ' + barsHtml(st.q) : ''}`;
-    $('pill' + side).title = (side === 'L' ? 'Linker Schuh: ' : 'Rechter Schuh: ') + st.text;
+    const b = battOf(side);
+    $('pill' + side).innerHTML = `<span class="dot ${st.cls === 'none' ? '' : st.cls}"></span>${side}${st.cls === 'on' && st.q ? ' ' + barsHtml(st.q) : ''}${battHtml(side)}`;
+    $('pill' + side).title = (side === 'L' ? 'Linker Schuh: ' : 'Rechter Schuh: ') + st.text +
+      (b ? ', Akku ' + battText(b) + (b.live ? '' : ' (' + agoText(b.at) + ')') : '');
   }
+  renderBattWarn();
 }
 
 // ---------- Daten für die eigene KI ----------
@@ -1330,15 +1683,67 @@ async function copyExport() {
   catch { $('exportText').select(); document.execCommand && document.execCommand('copy'); toast('Text markiert. Falls nötig, lange drücken und kopieren.'); }
 }
 
+// ---------- Zeit-Test: beide Sensoren aneinanderschlagen ----------
+let syncTest = null;
+function startSyncTest() {
+  const L = sensorFor('L'), R = sensorFor('R');
+  if (!L || !R || L.proto < 3 || R.proto < 3) { toast('Erst beide Sensoren verbinden (Firmware v3).'); return; }
+  syncTest = { L: [], R: [], hits: [] };
+  $('btnSyncApply').hidden = true; $('btnSyncTest').textContent = 'Test läuft …';
+  renderSyncTest();
+  clearTimeout(startSyncTest.t); startSyncTest.t = setTimeout(() => { if (syncTest) { finishSyncTest(); } }, 30000);
+}
+function syncTestStep(st) {
+  if (!syncTest) return;
+  const k = st[S_SIDE] === 0 ? 'L' : st[S_SIDE] === 1 ? 'R' : null;
+  if (!k) return;
+  syncTest[k].push(st[S_T]);
+  // Paare suchen: je ein Schlag links und rechts innerhalb von 300 ms
+  for (const tl of syncTest.L) {
+    const i = syncTest.R.findIndex(tr => Math.abs(tr - tl) <= 300);
+    if (i >= 0) { syncTest.hits.push(syncTest.R[i] - tl); syncTest.R.splice(i, 1); syncTest.L = syncTest.L.filter(x => x !== tl); break; }
+  }
+  const cut = st[S_T] - 1500;
+  syncTest.L = syncTest.L.filter(x => x > cut); syncTest.R = syncTest.R.filter(x => x > cut);
+  renderSyncTest();
+  if (syncTest.hits.length >= 5) finishSyncTest();
+}
+function renderSyncTest() {
+  const h = syncTest ? syncTest.hits : [];
+  $('syncOut').textContent = syncTest ? `${h.length} von 5 Schlägen erkannt` + (h.length ? `: ${h.map(x => (x > 0 ? '+' : '') + x).join(', ')} ms` : '') : '';
+}
+function finishSyncTest() {
+  const t = syncTest; syncTest = null; clearTimeout(startSyncTest.t);
+  $('btnSyncTest').textContent = 'Test starten';
+  if (!t || t.hits.length < 3) { $('syncOut').textContent = 'Zu wenige Schläge erkannt. Fester aneinanderschlagen und nochmal versuchen.'; return; }
+  const m = Math.round(median(t.hits)), spread = Math.round(Math.max(...t.hits) - Math.min(...t.hits));
+  const verdict = Math.abs(m) <= 15 && spread <= 30 ? 'Das reicht, um den Stemmschritt (meist über 60 ms) sicher zu erkennen.'
+                : Math.abs(m) > 15 && spread <= 30 ? 'Die Uhren liegen gleichmäßig versetzt. Mit „Versatz übernehmen“ gleicht die App das aus.'
+                : 'Die Werte schwanken stark. Nochmal testen, Handy näher an die Sensoren.';
+  $('syncOut').textContent = `Rechts liegt im Mittel ${m > 0 ? '+' : ''}${m} ms neben links, Schwankung ${spread} ms (${t.hits.map(x => (x > 0 ? '+' : '') + x).join(', ')} ms). ${verdict}` +
+    (settings.syncBias ? ` Bisher eingestellter Ausgleich: ${settings.syncBias} ms.` : '');
+  syncTest = null; finishSyncTest.m = m;
+  $('btnSyncApply').hidden = Math.abs(m) <= 5;
+}
+function applySyncBias() {
+  settings.syncBias = Math.round((settings.syncBias || 0) - (finishSyncTest.m || 0));
+  saveProfiles(); $('btnSyncApply').hidden = true;
+  toast(`Ausgleich gespeichert: rechts ${settings.syncBias > 0 ? '+' : ''}${settings.syncBias} ms`);
+}
+
 function renderSensors() {
   renderLearn(); renderConnect(); renderSensorBar();
+  const nOn = ['L', 'R'].filter(x => sideState(x).cls === 'on').length;
+  $('sensSum').textContent = nOn === 2 ? 'beide verbunden' : nOn === 1 ? '1 von 2 verbunden' : 'nicht verbunden';
   const list = $('sensorList');
   if (!sensors.size) { list.innerHTML = '<div class="empty">Noch kein Sensor verbunden.</div>'; return; }
   list.innerHTML = '';
   for (const s of sensors.values()) {
     const row = document.createElement('div'); row.className = 'sensor';
     const L = linkState(s), cls = L.cls;
-    const info = [L.text, s.rssi != null && L.cls === 'on' ? s.rssi + ' dBm' : '', s.replaying ? 'lädt Verpasstes nach …' : '',
+    const bb = s.batt;
+    const info = [L.text, s.rssi != null && L.cls === 'on' ? s.rssi + ' dBm' : '',
+                  bb ? 'Akku ' + (bb.chg ? 'lädt' : bb.pct + ' %') + (bb.mv ? ` (${nf(bb.mv / 1000, 2)} V)` : '') : '', s.replaying ? 'lädt Verpasstes nach …' : '',
                   s.recovered ? `${s.recovered} nachgeholt` : '', s.proto ? 'Firmware v' + s.proto : ''].filter(Boolean).join(' · ');
     row.innerHTML = `<span class="dot ${cls}"></span>
       <div class="grow"><div class="name">${L.cls === 'on' && L.q ? barsHtml(L.q) : ''}${esc(s.name)}${s.demo ? ' (Demo)' : ''}</div><div class="info">${esc(info)}</div></div>
@@ -1511,6 +1916,8 @@ function renderLast(ses, flash) {
     const a = last.app, parts = [FEET_TXT[last.feet], `${last.flight} ms Flug`, `${nf(last.peak)} g`];
     if (a) parts.push(a.n ? `${a.n} Anlaufschritte` + (a.gaps.length ? ` (${a.gaps.join(' / ')} ms)` : '') : 'ohne Anlauf');
     if (last.contact) parts.push(`Kontakt ${last.contact} ms` + (rsiOf(last) ? ` · RSI ${nf(rsiOf(last), 2)}` : ''));
+    const pg = plantGapOf(last);
+    if (pg != null) parts.push(Math.abs(pg) >= STAGGER_MS ? `Stemmschritt ${Math.abs(pg)} ms (${pg > 0 ? 'rechts' : 'links'} zuletzt)` : `beide Füße gleichzeitig (${Math.abs(pg)} ms)`);
     if (J.length > 1 && last.h >= Math.max(...J.map(j => j.h))) parts.push('neuer Bestwert');
     $('lastSub').textContent = parts.join(' · ');
   } else $('lastSub').textContent = 'Letzter Sprung';
@@ -1617,36 +2024,157 @@ function renderInsight(ses) {
     : '<p class="empty">Noch keine Sprünge.</p>';
 }
 
+const CHEV = '<svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function histLine(ses) {
+  const r = analyze(ses), d = new Date(ses.start);
+  return { title: d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+           sub: `${fmtDur(ses.end - ses.start)} · ${r.n} Sprünge · bester ${nf(r.best)} cm · Schnitt ${nf(r.avg)} cm` };
+}
+function openSaved(ses) { viewed = ses; switchTab('train'); renderAll(); window.scrollTo(0, 0); }
+
+async function deleteSaved(ses) {
+  await dbDelSession(ses.id); saved = saved.filter(s => s !== ses); allSaved = allSaved.filter(s => s !== ses);
+  if (viewed === ses) viewed = null;
+  trainCache = null; renderAll();
+  toast('Training gelöscht');
+}
+
+// Zeile im Verlauf: Antippen öffnet, nach links wischen zeigt „Löschen“
+function swipeRow(front, onOpen) {
+  let x0 = null, y0 = 0, dx = 0, open = false, moved = false;
+  front.addEventListener('pointerdown', e => { x0 = e.clientX; y0 = e.clientY; dx = 0; moved = false; front.classList.add('drag'); });
+  front.addEventListener('pointermove', e => {
+    if (x0 == null) return;
+    const mx = e.clientX - x0, my = e.clientY - y0;
+    if (!moved && Math.abs(my) > 10 && Math.abs(my) > Math.abs(mx)) { x0 = null; front.classList.remove('drag'); return; }
+    if (Math.abs(mx) > 6) moved = true;
+    dx = Math.max(-88, Math.min(0, (open ? -88 : 0) + mx));
+    front.style.transform = `translateX(${dx}px)`;
+  });
+  const end = () => {
+    if (x0 == null) return;
+    x0 = null; front.classList.remove('drag');
+    if (!moved) { if (open) { open = false; front.style.transform = ''; } else onOpen(); return; }
+    open = dx < -44; front.style.transform = open ? 'translateX(-88px)' : '';
+  };
+  front.addEventListener('pointerup', end); front.addEventListener('pointercancel', end);
+  front.addEventListener('keydown', e => { if (e.key === 'Enter') onOpen(); });
+}
+
 function renderHistory() {
   const list = $('histList');
-  if (!saved.length) { list.innerHTML = '<div class="empty">Noch keine.</div>'; return; }
+  $('histFoot').hidden = !saved.length;
+  if (!saved.length) { list.innerHTML = '<div class="empty">Noch keine Trainings. Nach dem ersten Training steht es hier.</div>'; return; }
   list.innerHTML = '';
   saved.forEach(ses => {
-    const r = analyze(ses), d = new Date(ses.start);
-    const div = document.createElement('div'); div.className = 'hist';
-    div.innerHTML = `<div class="name">${d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}, ${d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</div>
-      <div class="info">${fmtDur(ses.end - ses.start)} · ${r.n} Sprünge · bester ${nf(r.best)} cm · Schnitt ${nf(r.avg)} cm${ses.v2 ? ` · ${nf(r.dist / 1000, 2)} km` : ''}</div>
-      <div class="row" style="margin-top:6px"><button class="ghost small" data-a="v">Ansehen</button><button class="ghost small" data-a="c">CSV</button><button class="ghost small" data-a="d">Löschen</button></div>`;
-    div.querySelector('[data-a=v]').onclick = () => { viewed = ses; renderAll(); window.scrollTo({ top: $('viewBanner').offsetTop - 20, behavior: 'smooth' }); };
-    div.querySelector('[data-a=c]').onclick = () => exportCsv(ses);
-    div.querySelector('[data-a=d]').onclick = async () => {
-      if (!confirm('Dieses Training löschen?')) return;
-      await dbDelSession(ses.id); saved = saved.filter(s => s !== ses); allSaved = allSaved.filter(s => s !== ses);
-      if (viewed === ses) viewed = null;
-      trainCache = null; renderAll();
-    };
-    list.appendChild(div);
+    const h = histLine(ses);
+    const row = document.createElement('div'); row.className = 'swrow';
+    row.innerHTML = `<div class="swdel"><button aria-label="Training löschen">Löschen</button></div>
+      <div class="cell swfront hist" tabindex="0" role="button"><div class="grow"><div class="name">${esc(h.title)}</div><div class="info">${esc(h.sub)}</div></div>${CHEV}</div>`;
+    swipeRow(row.querySelector('.swfront'), () => openSaved(ses));
+    row.querySelector('.swdel button').onclick = () => deleteSaved(ses);
+    list.appendChild(row);
   });
 }
 
+function renderLastSess() {
+  const el = $('lastSess');
+  if (!saved.length) { el.innerHTML = ''; return; }
+  const ses = saved[0], h = histLine(ses);
+  el.innerHTML = `<h2>Letztes Training</h2><div class="group"><button class="cell"><span class="grow"><span>${esc(h.title)}</span><br><span class="info">${esc(h.sub)}</span></span>${CHEV}</button></div>`;
+  el.querySelector('button').onclick = () => openSaved(ses);
+}
+
+// ---------- Tabs ----------
+let tab = 'train';
+function switchTab(t) {
+  tab = t;
+  for (const [k, id] of [['train', 'tabTrain'], ['hist', 'tabHist'], ['set', 'tabSet']]) $(id).hidden = k !== t;
+  document.querySelectorAll('.tabbar button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  if (t === 'set') { fillSettings(); }
+  if (t === 'train') requestAnimationFrame(() => renderCharts(view()));
+  window.scrollTo(0, 0);
+}
+
+// ---------- Training beenden ----------
+function askEnd() {
+  const n = session ? jumpsOf(session).length : 0;
+  $('endTitle').textContent = n ? `Training mit ${n} ${n === 1 ? 'Sprung' : 'Sprüngen'} beenden und speichern?` : 'Training beenden? Ohne Sprünge wird nichts gespeichert.';
+  $('endBg').hidden = false;
+}
+async function confirmEnd() {
+  $('endBg').hidden = true;
+  const s = await stopSession();
+  if (s) showSummary(s);
+}
+function showSummary(ses) {
+  const r = analyze(ses);
+  $('sumDate').textContent = new Date(ses.start).toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  $('sumTiles').innerHTML = [['Sprünge', r.n], ['Schnitt', nf(r.avg) + ' cm'], ['Bestwert', nf(r.best) + ' cm'], ['Dauer', fmtDur(ses.end - ses.start)]]
+    .map(([l, v]) => `<div class="tile"><div class="lbl">${l}</div><div class="val">${v}</div></div>`).join('');
+  $('sum').hidden = false; document.body.style.overflow = 'hidden';
+  sumSes = ses;
+  requestAnimationFrame(() => { const J = jumpsOf(ses).slice(-80); barChart($('sumChart'), J.map(j => j.h), J.map(j => TYPE_COL[typeOf(j)]), 20); });
+}
+let sumSes = null;
+function closeSummary() { $('sum').hidden = true; document.body.style.overflow = ''; }
+
+// ---------- Einstieg ----------
+function openOnb() { $('onb').hidden = false; document.body.style.overflow = 'hidden'; onbStep(1);
+  const old = loadLS('vb_settings', {}); if (old.mass && !$('oMass').value) $('oMass').value = old.mass; }
+function onbStep(n) {
+  for (let i = 1; i <= 3; i++) $('onb' + i).hidden = i !== n;
+  if (n === 2) { onbCheck(false); setTimeout(() => $('oName').focus(), 80); }
+  if (n === 3) {
+    const w = [];
+    if (!window.isSecureContext) w.push('Die Seite muss über https geöffnet werden, sonst gibt es kein Bluetooth.');
+    else if (!navigator.bluetooth) w.push('Dieser Browser kann kein Web-Bluetooth. Öffne die App in Chrome auf Android. Mit den Demo-Sensoren kannst du sie trotzdem ausprobieren.');
+    $('oBtWarn').textContent = w.join(' '); $('oBtWarn').hidden = !w.length; $('oBt').disabled = !!w.length;
+  }
+}
+function onbVals() {
+  return { name: $('oName').value.trim(), mass: parseFloat(String($('oMass').value).replace(',', '.')), height: parseFloat(String($('oHeight').value).replace(',', '.')) };
+}
+// Fehler erst zeigen, wenn ein Feld verlassen wurde oder etwas drinsteht
+function onbCheck(show = true) {
+  const v = onbVals();
+  const errs = {
+    oName: !v.name ? 'Gib einen Namen ein.' : profiles.some(p => p.name.toLowerCase() === v.name.toLowerCase()) ? 'Diesen Namen gibt es schon.' : '',
+    oMass: !(v.mass >= 30 && v.mass <= 200) ? 'Bitte zwischen 30 und 200 kg.' : '',
+    oHeight: !(v.height >= 120 && v.height <= 230) ? 'Bitte zwischen 120 und 230 cm.' : ''
+  };
+  for (const k in errs) {
+    const touched = $(k).dataset.touched === '1' && $(k).value !== '';
+    $(k + 'Err').textContent = errs[k]; $(k + 'Err').hidden = !(show && touched && errs[k]);
+  }
+  const ok = !errs.oName && !errs.oMass && !errs.oHeight;
+  $('oGo2').disabled = !ok;
+  return ok;
+}
+async function onbCreate() {
+  if (!onbCheck()) return;
+  const v = onbVals();
+  if (!profile || profile.name !== v.name) await createProfileFrom(v.name, v.mass, v.height);
+  onbStep(3);
+}
+function onbFinish(demo) {
+  $('onb').hidden = true; document.body.style.overflow = '';
+  openConnect(true);
+  if (demo) startDemo(); else connectNew();
+}
+
+
 function renderAll(flash = false) {
-  const ses = view();
-  $('viewBanner').hidden = !viewed;
+  const ses = view(), live = !!(viewed || session);
+  $('idle').hidden = live; $('live').hidden = !live;
+  $('viewBanner').hidden = !viewed; $('viewActions').hidden = !viewed;
   $('liveCtrl').hidden = !!viewed;
-  if (viewed) $('viewTitle').textContent = 'Gespeichertes Training vom ' + new Date(viewed.start).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
-  const b = $('btnSession');
-  b.textContent = session ? 'Training beenden' : 'Training starten';
-  b.className = session ? 'stop' : '';
+  $('btnBack').hidden = !viewed;
+  $('btnSession').hidden = !session || !!viewed;
+  $('trainTitle').textContent = viewed ? 'Gespeichertes Training' : session ? 'Training läuft' : 'Training';
+  if (viewed) $('viewTitle').textContent = new Date(viewed.start).toLocaleString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  $('sessCount').textContent = session ? jumpsOf(session).length : 0;
+  renderLastSess();
   renderLast(ses, flash); renderStats(ses); renderCharts(ses); renderTypeTable(ses);
   renderInsight(ses); renderJumpRows(ses); renderHistory(); renderLearn();
 }
@@ -1767,12 +2295,12 @@ function download(name, text, type) {
 
 function exportCsv(ses) {
   const n = v => v == null ? '' : String(Math.round(v * 100) / 100).replace('.', ',');
-  const lines = ['zeit;art;markiert;fuss;hoehe_cm;hoehe_roh_cm;flug_ms;landung_g;anschlag;kontakt_ms;rsi;anlaufschritte;rhythmus_ms;anlauf_ms;seitlich;hoehe_L;hoehe_R;landung_L;landung_R'];
+  const lines = ['zeit;art;markiert;fuss;hoehe_cm;hoehe_roh_cm;flug_ms;landung_g;anschlag;kontakt_ms;rsi;anlaufschritte;rhythmus_ms;anlauf_ms;seitlich;hoehe_L;hoehe_R;landung_L;landung_R;kontakt_L;kontakt_R;stemm_ms'];
   for (const j of ses.jumps) {
     const a = j.app || {};
     lines.push([new Date(j.at).toISOString(), typeOf(j), (j.label || j.fake) ? 'ja' : 'nein', FEET_TXT[j.feet], n(j.h), n(j.hRaw), j.flight, n(j.peak),
                 j.clipped ? 'ja' : '', j.contact || '', n(rsiOf(j)), a.n ?? '', (a.gaps || []).join(' '), a.dur || '', n(a.lat),
-                n(j.hL), n(j.hR), n(j.peakL), n(j.peakR)].join(';'));
+                n(j.hL), n(j.hR), n(j.peakL), n(j.peakR), j.contactL || '', j.contactR || '', plantGapOf(j) ?? ''].join(';'));
   }
   const stamp = new Date(ses.start).toISOString().slice(0, 16).replace(/[:T]/g, '-');
   download(`training-${stamp}.csv`, '﻿' + lines.join('\r\n'), 'text/csv');
@@ -1810,7 +2338,20 @@ function makeDemoSensor(side, t0) {
     setTimeout(() => deliver([8, ...u32b(endT), ...u16b(n)]), n * 4 + 5);
   } };
   const rssi = () => (-58 - Math.round(Math.random() * 20)) & 255;
-  s.syncTimer = setInterval(() => { if (!sensors.has(s.key)) clearInterval(s.syncTimer); else deliver([7, ...u32b(s.fwNow()), 0, 0, rssi()]); }, 1000);
+  const t0b = Date.now();
+  const batt = () => {                                         // simulierter Akku
+    const sec = (Date.now() - t0b) / 1000;
+    if (side === 'L') return sec < 15 ? { chg: 1, pct: 74, mv: 4160 } : { chg: 0, pct: Math.max(0, 74 - Math.floor((sec - 15) / 60)), mv: 3980 - Math.floor(sec / 10) };
+    const pct = Math.max(0, 19 - Math.floor(sec / 12));
+    return { chg: 0, pct, mv: 3650 - Math.floor(sec / 2) };
+  };
+  s.hasBatt = true;
+  s.syncTimer = setInterval(() => {
+    if (!sensors.has(s.key)) { clearInterval(s.syncTimer); return; }
+    const b = batt();
+    deliver([7, ...u32b(s.fwNow()), 0, 0, rssi(), b.chg | 2, b.pct, ...u16b(b.mv)]);
+    if (!b.chg && b.pct !== s.demoPct) { s.demoPct = b.pct; onBattLevel(s, b.pct); }
+  }, 1000);
   setTimeout(() => deliver([7, ...u32b(s.fwNow())]), 50);
   return s;
 }
@@ -1862,13 +2403,14 @@ function startDemo() {
     steps.forEach((t, i) => setTimeout(() => sendStep(i % 2 ? R : L, t, sideways), Math.max(0, t - now) + 35));
     const lastStep = steps.length ? steps[steps.length - 1] : now;
     const contact = steps.length ? Math.round(rnd(180, 320)) : 0;
+    const stem = sideways ? rnd(-25, 25) : rnd(80, 180);   // Angriff/Aufschlag: rechts setzt vorher auf
     const takeoff = lastStep + (contact || 300);
     const flight = Math.round(Math.sqrt(8 * h / 100 / G) * 1000);
     const land = takeoff + flight, peak = rnd(4, 11);
     const landR = land + Math.round(rnd(5, 60));
     setTimeout(() => sendJump(L, land, flight, h, peak, contact), land - now + 85);
     setTimeout(() => sendJump(R, landR, flight + Math.round(rnd(-10, 10)), h + rnd(-1, 1), peak * rnd(0.8, 1.2),
-                              contact ? contact + Math.round(rnd(-20, 20)) : 0), landR - now + 85);
+                              contact ? contact + Math.round(stem + (landR - land)) : 0), landR - now + 85);
     // ein paar Schritte zwischendurch (Laufen)
     for (let i = 0; i < 6; i++) { const t = land + 900 + i * 380; setTimeout(() => sendStep(i % 2 ? R : L, t, Math.random() < 0.3), t - now + 35); }
     L.demoTimer = setTimeout(tick, land - now + rnd(3500, 6000));
@@ -1926,7 +2468,7 @@ function applyTheme(key) {
   const t = THEMES[key] || THEMES.onyx, r = document.documentElement;
   r.classList.toggle('light', !!t.light);
   r.style.setProperty('--acc', t.acc); r.style.setProperty('--acc-ink', t.ink); r.style.setProperty('--acc2', t.acc2);
-  document.querySelector('meta[name="theme-color"]').content = t.light ? '#f2f1ed' : '#0a0a0b';
+  document.querySelector('meta[name="theme-color"]').content = t.light ? '#f2f2f7' : '#000000';
   document.querySelectorAll('#themes .th').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === key));
 }
 
@@ -1958,6 +2500,20 @@ async function prepareSessions(list) {
       if (j.pred && !TYPES.includes(j.pred)) j.pred = null;
     }
   }
+  // Erkennung v0.15 (Stemmschritt): Anlauf und Vorschlag neu berechnen, Markierungen bleiben
+  trainCache = null;
+  for (const ses of list) {
+    if (ses.clsVer === 13) continue;
+    for (const j of ses.jumps) {
+      if (j.to == null) j.to = j.at - j.flight;
+      if (ses.steps && ses.steps.length && (j.v2 || ses.v2)) j.app = analyzeApproach(ses.steps, j.to);
+    }
+    ses.clsVer = 13;
+  }
+  for (const ses of list) {
+    for (const j of ses.jumps) if (!j.label) j.pred = classify(j);
+    if (ses !== session) { try { await dbPutSession(ses); } catch {} }
+  }
 }
 
 async function activateProfile(id) {
@@ -1981,11 +2537,14 @@ async function createProfile() {
   const name = $('pNewName').value.trim();
   const mass = parseFloat(String($('pNewMass').value).replace(',', '.'));
   const height = parseFloat(String($('pNewHeight').value).replace(',', '.'));
-  if (!name) { toast('Gib einen Namen ein.'); $('pNewName').focus(); return; }
-  if (!(mass >= 30 && mass <= 200)) { toast('Wie viel wiegst du? Bitte zwischen 30 und 200 kg.'); $('pNewMass').focus(); return; }
-  if (!(height >= 120 && height <= 230)) { toast('Wie groß bist du? Bitte zwischen 120 und 230 cm.'); $('pNewHeight').focus(); return; }
-  if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) { toast('Diesen Namen gibt es schon.'); return; }
-  if (session) { toast('Beende erst das laufende Training.'); return; }
+  if (await createProfileFrom(name, mass, height, true)) { $('pNewName').value = ''; $('pNewMass').value = ''; $('pNewHeight').value = ''; closeProfiles(); }
+}
+async function createProfileFrom(name, mass, height, fromList = false) {
+  if (!name) { toast('Gib einen Namen ein.'); return false; }
+  if (!(mass >= 30 && mass <= 200)) { toast('Wie viel wiegst du? Bitte zwischen 30 und 200 kg.'); return false; }
+  if (!(height >= 120 && height <= 230)) { toast('Wie groß bist du? Bitte zwischen 120 und 230 cm.'); return false; }
+  if (profiles.some(p => p.name.toLowerCase() === name.toLowerCase())) { toast('Diesen Namen gibt es schon.'); return false; }
+  if (session) { toast('Beende erst das laufende Training.'); return false; }
   const first = !profiles.length;
   const old = first ? loadLS('vb_settings', {}) : {};
   const p = { id: 'p' + Date.now().toString(36), name, mass, height,
@@ -2002,10 +2561,8 @@ async function createProfile() {
     try { localStorage.removeItem('vb_settings'); } catch {}
     if (orphans.length) toast(`${orphans.length} bisherige Trainings gehören jetzt zu ${name}`, 4000);
   }
-  $('pNewName').value = ''; $('pNewMass').value = ''; $('pNewHeight').value = '';
   await activateProfile(p.id);
-  closeProfiles();
-  if (first) openConnect(true);
+  return true;
 }
 
 async function deleteProfile(p) {
@@ -2019,7 +2576,7 @@ async function deleteProfile(p) {
   if (profile === p) {
     profile = null; settings = { mass: 75, stepLen: 0.6, landDrop: 5 };
     if (profiles.length) await activateProfile(profiles[0].id);
-    else { saved = []; session = null; renderProfileChip(); renderAll(); openProfiles(true); }
+    else { saved = []; session = null; renderProfileChip(); renderAll(); $('profiles').hidden = true; openOnb(); }
   }
   renderProfiles();
 }
@@ -2059,21 +2616,7 @@ function openProfiles(force = false) {
 }
 function closeProfiles() { if (!profile) return; $('profiles').hidden = true; document.body.style.overflow = ''; }
 
-function toggleMenu(show) {
-  const m = $('pMenu');
-  if (show === undefined) show = m.hidden;
-  if (show) {
-    const r = $('btnProfile').getBoundingClientRect();
-    m.style.top = (r.bottom + 8) + 'px';
-    m.style.right = Math.max(10, window.innerWidth - r.right) + 'px';
-  }
-  m.hidden = !show;
-}
-function openSettings() { toggleMenu(false); fillSettings(); applyTheme(profile.theme); $('settings').hidden = false; document.body.style.overflow = 'hidden'; }
-function closeSettings() { $('settings').hidden = true; document.body.style.overflow = ''; renderAll(); }
-document.addEventListener('click', e => {
-  if (!$('pMenu').hidden && !e.target.closest('#pMenu') && !e.target.closest('#btnProfile')) toggleMenu(false);
-});
+
 
 // ======================================================================
 // Start
@@ -2094,19 +2637,44 @@ async function init() {
   checkSupport(); initSettings();
   $('btnConnect').onclick = connectNew;
   $('btnDemo').onclick = startDemo;
-  $('btnSession').onclick = () => session ? stopSession() : startSession();
+  $('btnSyncTest').onclick = startSyncTest; $('btnSyncApply').onclick = applySyncBias;
+  $('btnSession').onclick = askEnd;
+  $('btnStart').onclick = () => startSession();
+  $('btnLearn2').onclick = openLearn;
+  $('endYes').onclick = confirmEnd;
+  $('endNo').onclick = () => { $('endBg').hidden = true; };
+  $('endBg').addEventListener('click', e => { if (e.target === $('endBg')) $('endBg').hidden = true; });
+  $('sumDone').onclick = closeSummary;
+  $('sumKi').onclick = openExport;
+  $('sumView').onclick = () => { closeSummary(); if (sumSes) openSaved(sumSes); };
+  $('btnCsv').onclick = () => viewed && exportCsv(viewed);
+  document.querySelectorAll('.tabbar button').forEach(b => b.onclick = () => { if (b.dataset.tab === tab && tab === 'train' && viewed) { viewed = null; renderAll(); } switchTab(b.dataset.tab); });
+  $('btnBattLog').onclick = exportBattLog;
+  $('cDetails').onclick = () => { $('detBg').hidden = false; };
+  $('detClose').onclick = () => { $('detBg').hidden = true; };
+  $('detBg').addEventListener('click', e => { if (e.target === $('detBg')) $('detBg').hidden = true; });
+  $('oGo1').onclick = () => onbStep(2);
+  $('oBack2').onclick = () => onbStep(1);
+  $('oBack3').onclick = () => onbStep(2);
+  $('oGo2').onclick = onbCreate;
+  ['oName', 'oMass', 'oHeight'].forEach(id => {
+    $(id).oninput = () => onbCheck();
+    $(id).onblur = () => { $(id).dataset.touched = '1'; onbCheck(); };
+    $(id).onkeydown = e => { if (e.key === 'Enter') { $(id).dataset.touched = '1'; if (id === 'oHeight') onbCreate(); else $(id === 'oName' ? 'oMass' : 'oHeight').focus(); } };
+  });
+  $('oBt').onclick = () => onbFinish(false);
+  $('oDemo').onclick = () => onbFinish(true);
   $('btnBackup').onclick = exportBackup;
-  $('btnBack').onclick = () => { viewed = null; renderAll(); };
+  $('btnBack').onclick = () => { viewed = null; renderAll(); switchTab('hist'); };
   $('btnLearn').onclick = openLearn;
   $('lClose').onclick = closeLearn;
   $('lBtnStart').onclick = learnStart;
   $('lBtnConnect').onclick = connectNew;
   $('lBtnDemo').onclick = startDemo;
-  $('lStop').onclick = () => { if (confirm('Training beenden und speichern?')) stopSession(); };
+  $('lStop').onclick = askEnd;
   $('lSkip').onclick = () => { const q = learnQueue(); if (q.length) learnSkip(q[0]); };
   $('lUndo').onclick = learnUndoLast;
   $('cGo').onclick = closeConnect;
-  $('btnSensors').onclick = () => openConnect(false);
   $('pillL').onclick = $('pillR').onclick = () => openConnect(false);
   $('btnExport').onclick = openExport;
   $('exportClose').onclick = closeExport;
@@ -2116,15 +2684,12 @@ async function init() {
   $('stats').addEventListener('click', e => { const b = e.target.closest('.ib'); if (b) openInfo(b.dataset.k); });
   $('infoClose').onclick = closeInfo;
   $('infoBg').addEventListener('click', e => { if (e.target === $('infoBg')) closeInfo(); });
-  $('btnProfile').onclick = () => toggleMenu();
-  $('mSettings').onclick = openSettings;
-  $('mProfiles').onclick = () => { toggleMenu(false); openProfiles(); };
-  $('sClose').onclick = closeSettings;
-  $('btnBackup2').onclick = exportBackup;
+  $('btnProfile').onclick = () => openProfiles();
   $('pClose').onclick = closeProfiles;
   $('pCreate').onclick = createProfile;
   ['pNewName', 'pNewMass', 'pNewHeight'].forEach(id => $(id).onkeydown = e => { if (e.key === 'Enter') createProfile(); });
   $('lBtnConnect').disabled = $('btnConnect').disabled;
+  $('btnSensors').onclick = () => openConnect(false);
   window.addEventListener('resize', () => renderCharts(view()));
   setInterval(() => {
     $('sessTime').textContent = session ? fmtDur(Date.now() - session.start) : '00:00';
@@ -2153,7 +2718,7 @@ async function init() {
   autoConnect();
   const last = loadLS('vb_activeProfile', null);
   if (profiles.length) { await activateProfile(profiles.some(p => p.id === last) ? last : profiles[0].id); openConnect(true); }
-  else { applyTheme('onyx'); openProfiles(true); }
+  else { applyTheme('onyx'); openOnb(); }
   renderSensors(); renderAll();
 }
 init();
